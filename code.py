@@ -3,7 +3,7 @@ import numpy as np
 
 idx = ".\\001"
 
-idx_list = [".\\001", ".\\002", ".\\003" ".\\004"]
+idx_list = [".\\001", ".\\002", ".\\003", ".\\004"]
 
 def get_paths(idx):
     ct_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "CT" in elem), None))
