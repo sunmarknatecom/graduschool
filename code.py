@@ -1,4 +1,4 @@
-import os, pydicom, copy
+import os, pydicom, copy, dicom2nifti, shutil
 import numpy as np
 
 idx = ".\\001"
@@ -127,3 +127,50 @@ def main(idx_list):
         valid_number = int(temp_vars["Last ID of NM"])-int(temp_vars["First ID of NM"])+1-len(temp_vars["IDs to delete"])
         print(elem, temp_vars)
         print(elem, temp_vars["Last ID of CT"], valid_number)
+    
+
+def convert_nifti(idx_list):
+    for elem in idx_list:
+        print(elem, " processing is stating")
+        temp_ct_path = get_paths(elem)[0]
+        os.mkdir(os.path.join(elem, elem + "_nifti"))
+        temp_dst_path = os.path.normpath(os.path.join(elem, elem + "_nifti"))
+        dicom2nifti.convert_directory(temp_ct_path, temp_dst_path)
+        rn_src_name = os.path.join(temp_dst_path, os.listdir(temp_dst_path)[0])
+        rn_dst_name = os.path.join(temp_dst_path, elem + "_nifiti.nii.gz")
+        os.rename(rn_src_name, rn_dst_name)
+        print(elem, " is complete")
+
+
+for elem in idx_list:
+    temp_src_path = os.path.join(elem, [elem for elem in os.listdir(elem) if "_nifti" in elem][0])
+    file_name = os.listdir(temp_src_path)[0]
+    temp_src_filename = os.path.join(temp_src_path, file_name)
+    temp_dst_path = os.path.join("D:\\gradustudy\\uploadfiles\\",file_name)
+    print(temp_src_filename, temp_dst_path)
+    shutil.copyfile(temp_src_filename, temp_dst_path)
+
+
+## colab
+
+!pip install pydicom totalsegmentator
+
+import os
+from totalsegmentator.python_api import totalsegmentator
+
+root_path = "/content/drive/MyDrive/gradstudy/nifti_ct"
+dst_path = "/content/drive/MyDrive/gradstudy/result"
+
+file_list = [os.path.join(root_path,elem) for elem in os.listdir(root_path)]
+
+for elem in file_list:
+    temp_dst_path =os.path.join(dst_path,os.path.basename(elem)[:4]+"nifti_label")
+    print(elem)
+    print(temp_dst_path)
+
+for elem in file_list:
+    temp_dst_path =os.path.join(dst_path,os.path.basename(elem)[:4]+"nifti_label")
+    print(elem, "Processing start")
+    print(temp_dst_path)
+    totalsegmentator(elem, temp_dst_path, ml=True, task="total")
+    print("Processing copmplete.")
