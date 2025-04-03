@@ -120,6 +120,8 @@ def get_transform_var(ct_slices, nm_file_obj):
     
     # CT와 매칭되는 마지막 NM 슬라이스 번호 찾기
     nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
+
+    final_skip_index = np.array(list(range(nm_start_index)),list(removed_nm_slices.keys()), list(range(nm_end_index+1,num_nm_slices)))
     
     return {
         "First ID of NM": nm_start_index,
@@ -128,7 +130,8 @@ def get_transform_var(ct_slices, nm_file_obj):
         "Last ID of CT": ct_end_index,
         "Length of CT ID": len(ct_slice_locations),
         "Length of NM ID": len(filtered_nm_slices),
-        "IDs to delete": list(removed_nm_slices.keys())
+        "IDs to delete": list(removed_nm_slices.keys()),
+        "final result": final_skip_index
     }
 
 
