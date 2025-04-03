@@ -8,6 +8,7 @@ idx_list = [".\\001", ".\\002", ".\\003", ".\\004"]
 def get_paths(idx):
     ct_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "CT" in elem), None))
     nm_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "NM" in elem), None))
+    print(ct_path, nm_path)
     return ct_path, nm_path
 
 def open_CT(FolderPath = ".//TEST_CT//"):
