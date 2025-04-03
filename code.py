@@ -5,6 +5,8 @@ idx = ".\\001"
 
 idx_list = [".\\001", ".\\002", ".\\003", ".\\004"]
 
+# file_util
+
 def get_paths(idx):
     ct_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "CT" in elem), None))
     nm_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "NM" in elem), None))
@@ -21,6 +23,11 @@ def open_CT(FolderPath = ".//TEST_CT//"):
 
 def open_NM(FolderPath = ".//TEST_NM//"):
     return pydicom.dcmread(os.path.join(FolderPath, os.listdir(FolderPath)[0]))
+
+# image process
+
+def create_ct_image(ct_objs):
+    return np.array([elem.pixel_array for elem in ct_objs])
 
 def get_transform_var(ct_obj, nm_obj):
     """
