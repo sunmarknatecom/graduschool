@@ -1,4 +1,4 @@
-import os, pydicom, copy, dicom2nifti, shutil
+import os, pydicom, copy, dicom2nifti, shutil, cv2
 import numpy as np
 
 idx = ".\\001"
@@ -90,7 +90,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     # NM 슬라이스 정리
     removed_nm_slices = {}
     num_ct_slices = len(ct_slice_locations)
-    num_nm_slices = list(filtered_nm_slices.keys())[-1]
+    num_nm_slices = list(filtered_nm_slices.keys())[-1] # ref1 마지막슬라이스 번호가 갯수에서 -1 
     ct_index = 0
     nm_index = list(filtered_nm_slices.keys())[0]
     nm_slices_to_remove = []
@@ -121,7 +121,8 @@ def get_transform_var(ct_slices, nm_file_obj):
     # CT와 매칭되는 마지막 NM 슬라이스 번호 찾기
     nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
 
-    final_skip_index = np.array(list(range(nm_start_index)),list(removed_nm_slices.keys()), list(range(nm_end_index+1,num_nm_slices)))
+    # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
+    final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
     
     return {
         "First ID of NM": nm_start_index,
@@ -135,7 +136,63 @@ def get_transform_var(ct_slices, nm_file_obj):
     }
 
 
+def transform_ct_image(ct_slices, nm_file_obj):
+    ct_frames = len(ct_slices)
+    ct_width, ct_height = ct_slices[0].pixel_array.shape
+    _, nm_width, nm_height = nm_file_obj.pixel_array.shape
+    ct_ps = float(ct_slices[0].PixelSpacing[0])
+    nm_ps = float(nm_file_obj.PixelSpacing[0])
+    # CT 위치
+    if "ImagePositionPatient" in ct_slices[0]:
+        ct_x0, ct_y0 = float(ct_slices[0].ImagePositionPatient[0]), float(ct_slices[0].ImagePositionPatient[1])
+    else:
+        ct_x0, ct_y0 = float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    # NM 위치
+    if "ImagePositionPatient" in nm_file_obj:
+        nm_x0, nm_y0 = float(nm_file_obj.ImagePositionPatient[0]), float(nm_file_obj.ImagePositionPatient[1])
+    else:
+        nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
+    target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
+    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
+    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    for i, temp_slice in enumerate(ct_slices):
+        temp_ret_image = cv2.resize(temp_slice.pixel_array, (target_shape_x, target_shape_y))
+        ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
+    return ret_image
+
+def transform_label(ct_slices, nm_file_obj, label_obj):
+    ct_frames = len(ct_slices)
+    ct_width, ct_height = ct_slices[0].pixel_array.shape
+    _, nm_width, nm_height = nm_file_obj.pixel_array.shape
+    ct_ps = float(ct_slices[0].PixelSpacing[0])
+    nm_ps = float(nm_file_obj.PixelSpacing[0])
+    # CT 위치
+    if "ImagePositionPatient" in ct_slices[0]:
+        ct_x0, ct_y0 = float(ct_slices[0].ImagePositionPatient[0]), float(ct_slices[0].ImagePositionPatient[1])
+    else:
+        ct_x0, ct_y0 = float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    # NM 위치
+    if "ImagePositionPatient" in nm_file_obj:
+        nm_x0, nm_y0 = float(nm_file_obj.ImagePositionPatient[0]), float(nm_file_obj.ImagePositionPatient[1])
+    else:
+        nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
+    target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
+    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
+    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    for i, temp_slice in enumerate(ct_slices):
+        temp_ret_image = cv2.resize(temp_slice.pixel_array, (target_shape_x, target_shape_y))
+        ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
+    return ret_image
+
+
 idx_list = [elem for elem in os.listdir() if os.path.isdir(elem)]
+
+
+
+
+# 파일 처리
 
 def main(idx_list):
     out_list = []
@@ -168,6 +225,7 @@ for elem in idx_list:
     temp_dst_path = os.path.join("D:\\gradustudy\\uploadfiles\\",file_name)
     print(temp_src_filename, temp_dst_path)
     shutil.copyfile(temp_src_filename, temp_dst_path)
+
 
 
 ## colab
