@@ -1,5 +1,7 @@
 import os, pydicom, copy, dicom2nifti, shutil, cv2
 import numpy as np
+import nibabel as nib
+import matplotlib.pyplot as plt
 
 idx = ".\\001"
 
@@ -24,6 +26,12 @@ def open_CT(FolderPath = ".//TEST_CT//"):
 def open_NM(FolderPath = ".//TEST_NM//"):
     return pydicom.dcmread(os.path.join(FolderPath, os.listdir(FolderPath)[0]))
 
+def open_LB(FolderPath = ".//TEST_LB//"):
+    temp_obj = nib.load(FolderPath)
+    temp_image = temp_obj.get_fdata()
+    temp_out_image = np.transpose(temp_image, (2, 1, 0))
+    temp_out_image = np.flip(temp_out_image, axis=1)
+    return temp_out_image
 # image process
 
 def create_ct_image(ct_objs):
@@ -135,6 +143,20 @@ def get_transform_var(ct_slices, nm_file_obj):
         "final result": final_skip_index
     }
 
+def realign_nm_image(nm_file_obj, nm_slices_to_remove):
+    """
+    nm_file_obj = NM file object
+    nm_slices_to_remove = list of slices to remove from NM image
+    
+    Function to realign NM image by removing specified slices.
+    
+    Returns:
+        Realigned NM image as a numpy array.
+    """
+    temp_nm_image = nm_file_obj.pixel_array
+    ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
+    return ret_image
+
 
 def transform_ct_image(ct_slices, nm_file_obj):
     ct_frames = len(ct_slices)
@@ -154,14 +176,14 @@ def transform_ct_image(ct_slices, nm_file_obj):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
+    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps))-1, round(abs((ct_y0-nm_y0)/nm_ps))+1
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     for i, temp_slice in enumerate(ct_slices):
         temp_ret_image = cv2.resize(temp_slice.pixel_array, (target_shape_x, target_shape_y))
         ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
     return ret_image
 
-def transform_label(ct_slices, nm_file_obj, label_obj):
+def transform_label(ct_slices, nm_file_obj, label_image):
     ct_frames = len(ct_slices)
     ct_width, ct_height = ct_slices[0].pixel_array.shape
     _, nm_width, nm_height = nm_file_obj.pixel_array.shape
@@ -179,10 +201,10 @@ def transform_label(ct_slices, nm_file_obj, label_obj):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
+    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps))-1, round(abs((ct_y0-nm_y0)/nm_ps))+1
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
-    for i, temp_slice in enumerate(ct_slices):
-        temp_ret_image = cv2.resize(temp_slice.pixel_array, (target_shape_x, target_shape_y))
+    for i, temp_slice in enumerate(label_image):
+        temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
         ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
     return ret_image
 
