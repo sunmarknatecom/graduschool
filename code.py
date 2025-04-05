@@ -41,9 +41,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     """
     ct_slices = objects list of CT
     nm_file_obj = an object of NM
-    
     Function to align CT and NM slices based on their slice locations.
-    
     Returns:
         {
             "First ID of NM": nm_start_index,
@@ -58,7 +56,6 @@ def get_transform_var(ct_slices, nm_file_obj):
     # CT 데이터 처리
     img_shape_ct = list(ct_slices[0].pixel_array.shape)
     img_shape_ct.append(len(ct_slices))
-    
     ct_slice_locations = {}
     for i, slice in enumerate(ct_slices):
         ct_slice_locations[i] = float(slice.SliceLocation)
@@ -72,7 +69,6 @@ def get_transform_var(ct_slices, nm_file_obj):
     num_nm_slices = nm_file_obj.NumberOfFrames
     for i in range(num_nm_slices):
         nm_slice_locations[i] = float(nm_start_position + i * nm_slice_thickness)
-    
     # CT-NM 정렬 지점 찾기 (NM 시작 인덱스 구하기)
     first_ct_location = next(iter(ct_slice_locations.values()))
     min_diff = float('inf')
@@ -82,7 +78,6 @@ def get_transform_var(ct_slices, nm_file_obj):
         if diff < min_diff:
             min_diff = diff
             nm_start_index = key
-    
     # NM 슬라이스 필터링
     filtered_nm_slices = {}
     found_start = False
@@ -94,7 +89,6 @@ def get_transform_var(ct_slices, nm_file_obj):
                 found_start = True
     else:
         filtered_nm_slices = copy.copy(nm_slice_locations)
-    
     # NM 슬라이스 정리
     removed_nm_slices = {}
     num_ct_slices = len(ct_slice_locations)
@@ -114,24 +108,18 @@ def get_transform_var(ct_slices, nm_file_obj):
             ct_index += 1
             nm_index += 1
             iteration_count += 1
-    
     for elem in nm_slices_to_remove:
         del filtered_nm_slices[elem]
-    
     # 매칭되는 CT 시작 슬라이스 번호 찾기
     first_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[0]]
     ct_start_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - first_nm_location))
-    
     # 매칭되는 CT 마지막 슬라이스 번호 찾기
     last_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[-1]]
     ct_end_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - last_nm_location))
-    
     # CT와 매칭되는 마지막 NM 슬라이스 번호 찾기
     nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
-
     # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
     final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
-    
     return {
         "First ID of NM": nm_start_index,
         "Last ID of NM": nm_end_index,
@@ -147,16 +135,13 @@ def realign_nm_image(nm_file_obj, nm_slices_to_remove):
     """
     nm_file_obj = NM file object
     nm_slices_to_remove = list of slices to remove from NM image
-    
     Function to realign NM image by removing specified slices.
-    
     Returns:
         Realigned NM image as a numpy array.
     """
     temp_nm_image = nm_file_obj.pixel_array
     ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
     return ret_image
-
 
 def transform_ct_image(ct_slices, nm_file_obj):
     ct_frames = len(ct_slices)
