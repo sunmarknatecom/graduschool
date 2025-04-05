@@ -65,3 +65,12 @@ def to_red_image(src_images):
     temp_ret_image = np.zeros((frame, width, height, 3), dtype=np.uint8)
     temp_ret_image[...,0] = src_images
     return temp_ret_image
+
+red_color_nor_tr_lb_image = to_red_image(color_nor_tr_lb_image)
+
+# 원소를 모두 255로
+
+out_image = copy.copy(red_color_nor_tr_lb_image)
+out_image[out_image>=1]=255
+
+
