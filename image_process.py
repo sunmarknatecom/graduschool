@@ -1,18 +1,20 @@
+import segspect as sgs
+
 idx = "001"
 
-ct_path, nm_path = get_paths(idx)
+ct_path, nm_path = sgs.get_paths(idx)
 lb_path = "D:\\99gradu\\labels\\"+idx+"_nifti_label.nii"
 
-ct_objs = open_CT(ct_path)
-nm_obj = open_NM(nm_path)
-lb_image = open_LB(lb_path)
+ct_objs = sgs.open_CT(ct_path)
+nm_obj = sgs.open_NM(nm_path)
+lb_image = sgs.open_LB(lb_path)
 
 
-skip_list = get_transform_var(ct_objs, nm_obj)["final result"]
+skip_list = sgs.get_transform_var(ct_objs, nm_obj)["final result"]
 
-tr_ct_image = transform_ct_image(ct_objs, nm_obj)
-tr_lb_image = transform_label(ct_objs, nm_obj, lb_image)
-re_nm_image = realign_nm_image(nm_obj, skip_list)
+tr_ct_image = sgs.transform_ct_image(ct_objs, nm_obj)
+tr_lb_image = sgs.transform_label(ct_objs, nm_obj, lb_image)
+re_nm_image = sgs.realign_nm_image(nm_obj, skip_list)
 
 nor_tr_ct_image = cv2.normalize(tr_ct_image, None, 0, 255, cv2.NORM_MINMAX)
 nor_tr_lb_image = cv2.normalize(tr_lb_image, None, 0, 255, cv2.NORM_MINMAX)
@@ -66,7 +68,7 @@ def to_red_image(src_images):
     temp_ret_image[...,0] = src_images
     return temp_ret_image
 
-red_color_nor_tr_lb_image = to_red_image(color_nor_tr_lb_image)
+red_color_nor_tr_lb_image = sgs.to_red_image(color_nor_tr_lb_image)
 
 # 원소를 모두 255로
 
