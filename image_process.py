@@ -73,8 +73,8 @@ red_color_nor_tr_lb_image = to_red_image(color_nor_tr_lb_image)
 out_image = copy.copy(red_color_nor_tr_lb_image)
 out_image[out_image>=1]=255
 
-def only_seg_lb_image(src_lb_image, n = 70):
-    return (src_lb_image == n).astype(np.uint8)*n
+def only_seg_lb_image(src_lb_image, seg_n = 70):
+    return (src_lb_image == n).astype(np.uint8)*seg_n
 
 def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(tr_lb_image == seg_n)
