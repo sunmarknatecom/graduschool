@@ -74,4 +74,4 @@ out_image = copy.copy(red_color_nor_tr_lb_image)
 out_image[out_image>=1]=255
 
 def only_seg_lb_image(src_lb_image, n = 70):
-    return (src_lb_image == n).astype(np.uint8)
+    return (src_lb_image == n).astype(np.uint8)*255
