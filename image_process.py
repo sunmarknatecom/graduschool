@@ -62,22 +62,10 @@ color_nor_tr_ct_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for ele
 color_nor_tr_lb_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in nor_tr_lb_image], dtype=np.uint8)
 color_nor_re_nm_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in nor_re_nm_image], dtype=np.uint8)
 
-def to_red_image(src_images):
-    frame, width, height = np.shape(src_images)
-    temp_ret_image = np.zeros((frame, width, height, 3), dtype=np.uint8)
-    temp_ret_image[...,0] = src_images
-    return temp_ret_image
-
 red_color_nor_tr_lb_image = sgs.to_red_image(color_nor_tr_lb_image)
 
 # 원소를 모두 255로
-
 out_image = copy.copy(red_color_nor_tr_lb_image)
 out_image[out_image>=1]=255
 
-def only_seg_lb_image(src_lb_image, seg_n = 70):
-    return (src_lb_image == n).astype(np.uint8)*seg_n
 
-def find_min_max_index(src_lb_image, seg_n = 70):
-    indices = np.argwhere(tr_lb_image == seg_n)
-    return np.min(indices[:,0]), np.max(indices[:,0])
