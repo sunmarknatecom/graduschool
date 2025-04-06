@@ -8,7 +8,7 @@ nm_obj = open_NM(nm_path)
 lb_image = open_LB(lb_path)
 
 
-skip_list = get_transform_var(ct_objs, nm_obj)["final_result"]
+skip_list = get_transform_var(ct_objs, nm_obj)["final result"]
 
 tr_ct_image = transform_ct_image(ct_objs, nm_obj)
 tr_lb_image = transform_label(ct_objs, nm_obj, lb_image)
