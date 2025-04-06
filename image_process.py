@@ -78,4 +78,4 @@ def only_seg_lb_image(src_lb_image, n = 70):
 
 def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(tr_lb_image == seg_n)
-    return np.min(indices[:,0]), max_val = np.max(indices[:,0])
+    return np.min(indices[:,0]), np.max(indices[:,0])
