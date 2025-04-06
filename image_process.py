@@ -1,5 +1,11 @@
 import segspect as sgs
 
+def to_red_image(src_images):
+    frame, width, height = np.shape(src_images)
+    temp_ret_image = np.zeros((frame, width, height, 3), dtype=np.uint8)
+    temp_ret_image[...,0] = src_images
+    return temp_ret_image
+
 def only_seg_lb_image(src_lb_image, seg_n = 70):
     return (src_lb_image == n).astype(np.uint8)*seg_n
 
@@ -23,9 +29,13 @@ tr_ct_image = sgs.transform_ct_image(ct_objs, nm_obj)
 tr_lb_image = sgs.transform_label(ct_objs, nm_obj, lb_image)
 re_nm_image = sgs.realign_nm_image(nm_obj, skip_list)
 
+# normalization of images
+
 nor_tr_ct_image = cv2.normalize(tr_ct_image, None, 0, 255, cv2.NORM_MINMAX)
 nor_tr_lb_image = cv2.normalize(tr_lb_image, None, 0, 255, cv2.NORM_MINMAX)
 nor_re_nm_image = cv2.normalize(re_nm_image, None, 0, 255, cv2.NORM_MINMAX)
+
+# dtype to uint8
 
 nor_tr_ct_image = np.array(nor_tr_ct_image, dtype=np.uint8)
 nor_tr_lb_image = np.array(nor_tr_lb_image, dtype=np.uint8)
@@ -64,6 +74,8 @@ L3 - Segment_29
 L4 - Segment_28
 L5 - Segment_27
 '''
+
+# gray to color
 
 color_nor_tr_ct_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in nor_tr_ct_image], dtype=np.uint8)
 color_nor_tr_lb_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in nor_tr_lb_image], dtype=np.uint8)
