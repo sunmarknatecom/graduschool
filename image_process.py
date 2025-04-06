@@ -75,3 +75,7 @@ out_image[out_image>=1]=255
 
 def only_seg_lb_image(src_lb_image, n = 70):
     return (src_lb_image == n).astype(np.uint8)*255
+
+def find_min_max_index(src_lb_image, seg_n = 70):
+    indices = np.argwhere(tr_lb_image == seg_n)
+    return np.min(indices[:,0]), max_val = np.max(indices[:,0])
