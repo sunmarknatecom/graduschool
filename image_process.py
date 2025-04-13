@@ -19,7 +19,7 @@ def find_sig_index(arr):
     for i, elem in enumerate(arr):
         if elem != 0:
             if start is None:
-                start = 1
+                start = i
         else:
             if start is not None:
                 ranges.append((start, i))
