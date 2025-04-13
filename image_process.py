@@ -27,7 +27,9 @@ def find_sig_index(arr):
     if start is not None:
         ranges.append((start, len(arr)))
     return ranges
-    
+
+def find_sig_frame(arr):
+    return [(np.sum(elem) !=0).astype(int) for elem in arr]
 
 idx = "001"
 
