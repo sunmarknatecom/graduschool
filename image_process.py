@@ -13,6 +13,22 @@ def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(src_lb_image == seg_n)
     return np.min(indices[:,0]), np.max(indices[:,0])
 
+def find_sig_index(arr):
+    ranges = []
+    start = None
+    for i, elem in enumerate(arr):
+        if elem != 0:
+            if start is None:
+                start = 1
+        else:
+            if start is not None:
+                ranges.append((start, i))
+                start = None
+    if start is not None:
+        ranges.append((start, len(arr)))
+    return ranges
+    
+
 idx = "001"
 
 ct_path, nm_path = sgs.get_paths(idx)
