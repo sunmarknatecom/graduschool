@@ -128,3 +128,22 @@ organs = {
     116 : "sternum",
     117 : "costal_cartilages"
 }
+
+# main 함수
+
+idx = ".\\data\\001"
+
+ct_path, nm_path = get_paths(idx)
+
+ct_objs = open_CT(ct_path)
+nm_obj = open_NM(nm_path)
+lb_path = "D:\\gradustudy\\labels\\"+idx[-3:]+"_nifti_label.nii"
+
+ct_image = create_ct_image(ct_objs)
+nm_image = nm_obj.pixel_array
+
+skip_list = get_transform_var(ct_objs, nm_obj)["final result"]
+re_nm_image = realign_nm_image(nm_obj, skip_list)
+
+for i in bones_index:
+	temp_
