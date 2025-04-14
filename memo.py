@@ -162,7 +162,7 @@ def main():
         ct_path, nm_path = get_paths(IDX)
         ct_objs = open_CT(ct_path)
         nm_obj = open_NM(nm_path)
-        lb_path = "D:\\gradustudy\\lables\\"+IDX[-3:]+"_nifti_label.nii"
+        lb_path = "D:\\gradustudy\\labels\\"+IDX[-3:]+"_nifti_label.nii"
         ct_image = create_ct_image(ct_objs)
         nm_image = nm_obj.pixel_array
         lb_image = open_LB(lb_path)
