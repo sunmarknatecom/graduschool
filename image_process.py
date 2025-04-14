@@ -9,6 +9,9 @@ def to_red_image(src_images):
 def only_seg_lb_image(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)*seg_n
 
+def only_seg_lb_1ch_image(src_lb_image, seg_n = 70):
+    return (src_lb_image == seg_n).astype(np.uint8)
+
 def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(src_lb_image == seg_n)
     return np.min(indices[:,0]), np.max(indices[:,0])
