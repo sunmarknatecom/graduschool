@@ -166,7 +166,7 @@ def main():
         ct_image = create_ct_image(ct_objs)
         nm_image = nm_obj.pixel_array
         lb_image = open_LB(lb_path)
-        skip_list = get_transform_var(ct_objs, nm_obj)["finial result"]
+        skip_list = get_transform_var(ct_objs, nm_obj)["final result"]
         re_nm_image = realign_nm_image(nm_obj, skip_list)
         organ_index_dict = {}
         for i in bones_index:
