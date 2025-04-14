@@ -155,3 +155,24 @@ for i in bones_index:
 	temp_index_list = find_sig_index(temp_sig_frames)
 	orgn_index_dict[organs[i]]=temp_index_list
 	print(organs[i], temp_index_list)
+
+def main():
+    root_idx = [".\\data\\001",".\\data\\002",".\\data\\003"]
+    for IDX in root_idx:
+        ct_path, nm_path = get_paths(IDX)
+        ct_objs = open_CT(ct_path)
+        nm_obj = open_NM(nm_path)
+        lb_path = "D:\\gradustudy\\lables\\"+IDX[-3:]+"_nifti_label.nii"
+        ct_image = create_ct_image(ct_objs)
+        nm_image = nm_obj.pixel_array
+        lb_image = open_LB(lb_path)
+        skip_list = get_transform_var(ct_objs, nm_obj)["finial result"]
+        re_nm_image = realign_nm_image(nm_obj, skip_list)
+        organ_index_dict = {}
+        for i in bones_index:
+            temp_subset_lb_image = only_seg_lb_1ch_image(lb_image, seg_n=i)
+            temp_tr_subset_lb_image = transform_label(ct_objs, nm_obj, temp_subset_lb_image)
+            temp_sig_frames = find_sig_frame(temp_tr_subset_lb_image)
+            temp_index_list = find_sig_index(temp_sig_frames)
+            orgn_index_dict[organs[i]]=temp_index_list
+            print(organs[i], temp_index_list)
