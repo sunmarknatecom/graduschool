@@ -153,10 +153,11 @@ for i in bones_index:
 	temp_tr_subset_lb_image = transform_label(ct_objs, nm_obj, temp_subset_lb_image)
 	temp_sig_frames = find_sig_frame(temp_tr_subset_lb_image)
 	temp_index_list = find_sig_index(temp_sig_frames)
-	orgn_index_dict[organs[i]]=temp_index_list
+	organ_index_dict[organs[i]]=temp_index_list
 	print(organs[i], temp_index_list)
 
 def main():
+	bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
     root_idx = [".\\data\\001",".\\data\\002",".\\data\\003"]
     for IDX in root_idx:
         ct_path, nm_path = get_paths(IDX)
@@ -174,5 +175,5 @@ def main():
             temp_tr_subset_lb_image = transform_label(ct_objs, nm_obj, temp_subset_lb_image)
             temp_sig_frames = find_sig_frame(temp_tr_subset_lb_image)
             temp_index_list = find_sig_index(temp_sig_frames)
-            orgn_index_dict[organs[i]]=temp_index_list
+            organ_index_dict[organs[i]]=temp_index_list
             print(organs[i], temp_index_list)
