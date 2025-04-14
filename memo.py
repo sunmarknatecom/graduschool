@@ -141,9 +141,14 @@ lb_path = "D:\\gradustudy\\labels\\"+idx[-3:]+"_nifti_label.nii"
 
 ct_image = create_ct_image(ct_objs)
 nm_image = nm_obj.pixel_array
+lb_image = open_LB(lb_path)
 
 skip_list = get_transform_var(ct_objs, nm_obj)["final result"]
 re_nm_image = realign_nm_image(nm_obj, skip_list)
 
 for i in bones_index:
-	temp_
+	temp_subset_lb_image = only_seg_lb_1ch_image(lb_image, seg_n=i)
+	temp_tr_subset_lb_image = transform_label(ct_objs, nm_obj, temp_subset_lb_image)
+	temp_sig_frames = find_sig_frame(temp_temp_tr_lb_image)
+	temp_index_list = find_sig_index(temp_sig_frames)
+	print(organs[i], temp_index_list)
