@@ -35,7 +35,7 @@ def open_LB(FolderPath = ".//TEST_LB//"):
 # image process
 
 def create_ct_image(ct_objs):
-    return np.array([elem.pixel_array for elem in ct_objs]*float(ct_objs[0].RescaleSlope)+float(ct_objs[0].RescaleIntercept).dtype=np.int16)
+    return np.array(np.array([elem.pixel_array for elem in ct_objs])*float(ct_objs[0].RescaleSlope)+float(ct_objs[0].RescaleIntercept).dtype=np.int16)
 
 def get_transform_var(ct_slices, nm_file_obj):
     """
