@@ -206,7 +206,6 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     target_y_start = max(0, offset_y)
     target_y_end = target_y_start + (t_y_end - t_y_start)
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
-    out_raw_ct_image = []
     for i, temp_slice in enumerate(label_image):
         temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
         ret_image[i, target_y_start:target_y_end, target_x_start:target_x_end] = temp_ret_image[t_y_start:t_y_end,t_x_start:t_x_end]
