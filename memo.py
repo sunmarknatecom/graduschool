@@ -188,7 +188,7 @@ def get_ct_nm_lb_images(idx):
     tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
     temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
-    re_nm_image = realign_nm_image(nm_obj, temp_skip_list)
+    re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
     return tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 for elem in idx_list:
