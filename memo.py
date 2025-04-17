@@ -193,5 +193,5 @@ def get_images(idx):
     return tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 for elem in idx_list:
-    ct_iamge, nm_image, lb_image = get_ct_nm_lb_images(elem)
+    ct_iamge, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(ct_iamge), np.shape(nm_image), np.shape(lb_image))
