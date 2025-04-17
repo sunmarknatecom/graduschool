@@ -160,14 +160,22 @@ def transform_ct_image(ct_slices, nm_file_obj):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps))-1, round(abs((ct_y0-nm_y0)/nm_ps))+1
+    offset_x, offset_y = round(abs((ct_x0-nm_x0)/nm_ps))-1, round(abs((ct_y0-nm_y0)/nm_ps))+1
+    t_x_start = max(0, -offset_x)
+    t_x_end = min(target_shape_x, target_shape_x-offset_x)
+    t_y_start = max(0, -offset_y)
+    t_y_end = min(target_shape_y, target_shape_y-offset_y)
+    target_x_start = max(0, offset_x)
+    target_x_end = target_x_start + (t_x_end - t_x_start)
+    target_y_start = max(0, offset_y)
+    target_y_end = target_y_start + (t_y_end - t_y_start)
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     out_raw_ct_image = []
     for i, temp_slice in enumerate(ct_slices):
         temp_image = temp_slice.pixel_array
         out_raw_ct_image.append(temp_image)
         temp_ret_image = cv2.resize(temp_image, (target_shape_x, target_shape_y))
-        ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
+        ret_image[i, target_y_start:target_y_end, target_x_start:target_x_end] = temp_ret_image[t_y_start:t_y_end,t_x_start:t_x_end]
     return np.array(out_raw_ct_image, dtype=np.int16), ret_image
 
 def transform_label(ct_slices, nm_file_obj, label_image):
