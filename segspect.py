@@ -10,8 +10,9 @@ idx_list = os.listdir(".\\data\\")
 def get_paths(idx):
     ct_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "CT" in elem), None))
     nm_path = os.path.join(idx, next((elem for elem in os.listdir(idx) if "NM" in elem), None))
+    lb_path = ".\\labels\\"+idx+"_nifti_label.nii"
     #print(ct_path, nm_path)
-    return ct_path, nm_path
+    return ct_path, nm_path, lb_path
 
 def open_CT(FolderPath = ".//TEST_CT//"):
     temp_objs = [pydicom.dcmread(os.path.join(FolderPath,elem)) for elem in os.listdir(FolderPath)]
