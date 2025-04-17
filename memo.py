@@ -182,7 +182,7 @@ def get_images(idx):
     '''
     return : ct_image(np), nm_image(np), lb_image(np)
     '''
-    temp_ct_path, temp_nm_path, lb_path = get_paths(idx)
+    temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
     temp_ct_objs = open_CT(temp_ct_path)
     temp_nm_obj = open_NM(temp_nm_path)
     temp_lb_image = open_LB(temp_lb_path)
