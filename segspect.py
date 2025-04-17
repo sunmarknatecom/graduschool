@@ -8,8 +8,8 @@ idx_list = os.listdir(".\\data\\")
 # file_util
 
 def get_paths(idx, root_path = ".\\data\\"):
-    ct_path = os.path.join(root_path, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "CT" in elem), None))
-    nm_path = os.path.join(root_path, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "NM" in elem), None))
+    ct_path = os.path.join(root_path, idx, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "CT" in elem), None))
+    nm_path = os.path.join(root_path, idx, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "NM" in elem), None))
     lb_path = ".\\labels\\"+idx+"_nifti_label.nii"
     #print(ct_path, nm_path)
     return ct_path, nm_path, lb_path
