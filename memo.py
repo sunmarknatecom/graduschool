@@ -133,11 +133,10 @@ organs = {
 
 idx = ".\\data\\001"
 
-ct_path, nm_path = get_paths(idx)
+ct_path, nm_path, lb_path = get_paths(idx)
 
 ct_objs = open_CT(ct_path)
 nm_obj = open_NM(nm_path)
-lb_path = "D:\\gradustudy\\labels\\"+idx[-3:]+"_nifti_label.nii"
 
 ct_image = create_ct_image(ct_objs)
 nm_image = nm_obj.pixel_array
@@ -161,7 +160,7 @@ def main():
     bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
     root_idx = [".\\data\\001",".\\data\\002",".\\data\\003"]
     for IDX in root_idx:
-        ct_path, nm_path = get_paths(IDX)
+        ct_path, nm_path, lb_path = get_paths(IDX)
         ct_objs = open_CT(ct_path)
         nm_obj = open_NM(nm_path)
         lb_path = "D:\\gradustudy\\labels\\"+IDX[-3:]+"_nifti_label.nii"
@@ -179,9 +178,11 @@ def main():
             organ_index_dict[organs[i]]=temp_index_list
             print(organs[i], temp_index_list)
 
-def get_ct_nm_lb_images(idx):
-    temp_ct_path, temp_nm_path = get_paths(".\\data\\"+idx)
-    temp_lb_path = "D:\\gradustudy\\labels\\"+idx+"_nifti_label.nii"
+def get_images(idx):
+    '''
+    return : ct_image(np), nm_image(np), lb_image(np)
+    '''
+    temp_ct_path, temp_nm_path, lb_path = get_paths(idx)
     temp_ct_objs = open_CT(temp_ct_path)
     temp_nm_obj = open_NM(temp_nm_path)
     temp_lb_image = open_LB(temp_lb_path)
