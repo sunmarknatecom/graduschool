@@ -180,17 +180,17 @@ def main():
 
 def get_images(idx):
     '''
-    return : ct_image(np), nm_image(np), lb_image(np)
+    return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
     '''
     temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
     temp_ct_objs = open_CT(temp_ct_path)
     temp_nm_obj = open_NM(temp_nm_path)
     temp_lb_image = open_LB(temp_lb_path)
-    tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+    raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
     temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    return tr_temp_ct_image, re_nm_image, tr_temp_lb_image
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 for elem in idx_list:
     ct_iamge, nm_image, lb_image = get_images(elem)
