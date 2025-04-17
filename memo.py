@@ -179,3 +179,18 @@ def main():
             organ_index_dict[organs[i]]=temp_index_list
             print(organs[i], temp_index_list)
 
+def get_ct_nm_lb_images(idx):
+    temp_ct_path, temp_nm_path = get_paths(".\\data\\"+idx)
+    temp_lb_path = "D:\\gradustudy\\labels\\"+idx+"_nifti_label.nii"
+    temp_ct_objs = open_CT(temp_ct_path)
+    temp_nm_obj = open_NM(temp_nm_path)
+    temp_lb_image = open_LB(temp_lb_path)
+    tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+    tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
+    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
+    re_nm_image = realign_nm_image(nm_obj, temp_skip_list)
+    return tr_temp_ct_image, re_nm_image, tr_temp_lb_image
+
+for elem in idx_list:
+    ct_iamge, nm_image, lb_image = get_ct_nm_lb_images(elem)
+    print(elem, np.shape(ct_iamge), np.shape(nm_image), np.shape(lb_image))
