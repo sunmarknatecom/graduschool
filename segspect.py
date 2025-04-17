@@ -3,9 +3,7 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 
-idx = ".\\001"
-
-idx_list = [".\\001", ".\\002", ".\\003", ".\\004"]
+idx_list = os.listdir(".\\data\\")
 
 # file_util
 
