@@ -162,10 +162,13 @@ def transform_ct_image(ct_slices, nm_file_obj):
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
     t_x, t_y = round(abs((ct_x0-nm_x0)/nm_ps))-1, round(abs((ct_y0-nm_y0)/nm_ps))+1
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    out_raw_ct_image = []
     for i, temp_slice in enumerate(ct_slices):
-        temp_ret_image = cv2.resize(temp_slice.pixel_array, (target_shape_x, target_shape_y))
+        temp_image = temp_slice.pixel_array
+        out_raw_ct_image.append(temp_image)
+        temp_ret_image = cv2.resize(temp_image, (target_shape_x, target_shape_y))
         ret_image[i, t_x:t_x+target_shape_x, t_y:t_y+target_shape_y] = temp_ret_image
-    return ret_image
+    return np.array(out_raw_ct_image, dtype=np.int16), ret_image
 
 def transform_label(ct_slices, nm_file_obj, label_image):
     ct_frames = len(ct_slices)
