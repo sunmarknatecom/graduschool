@@ -1,9 +1,8 @@
 import segspect as sgs
 
 def to_red_image(src_images):
-    frame, width, height = np.shape(src_images)
-    temp_ret_image = np.zeros((frame, width, height, 3), dtype=np.uint8)
-    temp_ret_image[...,0] = src_images
+    temp_image = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
+    temp_image = np.array([cv2.cvtColor(elem,)],dtype=np.uint8)
     return temp_ret_image
 
 def to_color_image(src_images):
