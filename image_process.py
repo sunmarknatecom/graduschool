@@ -2,7 +2,7 @@ import segspect as sgs
 
 def to_red_image(src_images):
     temp_image = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
-    temp_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB)],dtype=np.uint8)
+    temp_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in temp_image],dtype=np.uint8)
     temp_image[:,:,:,2]=0
     temp_image[:,:,:,1]=0
     return temp_image
