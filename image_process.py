@@ -6,6 +6,11 @@ def to_red_image(src_images):
     temp_ret_image[...,0] = src_images
     return temp_ret_image
 
+def to_color_image(src_images):
+    #normalize
+    norm_images = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
+    return np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in norm_images], dtype=np.uint8)
+
 def only_seg_lb_image(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)*seg_n
 
