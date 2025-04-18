@@ -198,7 +198,7 @@ for elem in idx_list:
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
     color_ct_image = to_color_image(ct_image)
     red_lb_image = to_red_image(lb_image)
-    out_fusion_image = fusion_image(color_ct_image, red_lb_image)
+    out_fusion_image = fusion_images(color_ct_image, red_lb_image)
     plt.imshow(out_fusion_image[570])
     plt.show()
 
