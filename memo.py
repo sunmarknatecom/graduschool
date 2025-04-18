@@ -192,6 +192,13 @@ def get_images(idx):
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
     return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
+print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in idx_list:
     ct_iamge, nm_image, lb_image = get_images(elem)
-    print(elem, np.shape(ct_iamge), np.shape(nm_image), np.shape(lb_image))
+    print(elem, np.shape(raw_ct_iamge), np.shape(raw_lb_image), np.shape(ct_iamge), np.shape(nm_image), np.shape(lb_image))
+    color_ct_image = to_color_image(ct_image)
+    red_lb_image = to_red_image(lb_image)
+    out_fusion_image = fusion_image(color_ct_image, red_lb_image)
+    plt.imshow(out_fusion_image[570])
+    plt.show()
+
