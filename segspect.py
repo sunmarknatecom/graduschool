@@ -160,22 +160,22 @@ def transform_ct_image(ct_slices, nm_file_obj):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
-    t_x_start = max(0, -offset_x)
-    t_x_end = min(target_shape_x, target_shape_x-offset_x)
-    t_y_start = max(0, -offset_y)
-    t_y_end = min(target_shape_y, target_shape_y-offset_y)
-    target_x_start = max(0, offset_x)
-    target_x_end = target_x_start + (t_x_end - t_x_start)
-    target_y_start = max(0, offset_y)
-    target_y_end = target_y_start + (t_y_end - t_y_start)
+    offset_x, offset_y = round(ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
+    start_x_a = max(0, -offset_x)
+    start_y_a = max(0, -offset_y)
+    end_x_a = min(target_shape_x, nm_width - offset_x)
+    end_y_a = min(target_shape_y, nm_height - offset_y)
+    start_x_b = max(0, offset_x)
+    start_y_b = max(0, offset_y)
+    end_x_b = start_x_b + (end_x_a - start_x_a)
+    end_y_b = start_y_b + (end_y_a - start_y_a)
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     out_raw_ct_image = []
     for i, temp_slice in enumerate(ct_slices):
         temp_image = temp_slice.pixel_array
         out_raw_ct_image.append(temp_image)
         temp_ret_image = cv2.resize(temp_image, (target_shape_x, target_shape_y))
-        ret_image[i, target_y_start:target_y_end, target_x_start:target_x_end] = temp_ret_image[t_y_start:t_y_end,t_x_start:t_x_end]
+        ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
     return np.array(out_raw_ct_image, dtype=np.int16), ret_image
 
 def transform_label(ct_slices, nm_file_obj, label_image):
@@ -196,19 +196,24 @@ def transform_label(ct_slices, nm_file_obj, label_image):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round(abs((ct_x0-nm_x0)/nm_ps)), round(abs((ct_y0-nm_y0)/nm_ps))
-    t_x_start = max(0, -offset_x)
-    t_x_end = min(target_shape_x, target_shape_x-offset_x)
-    t_y_start = max(0, -offset_y)
-    t_y_end = min(target_shape_y, target_shape_y-offset_y)
-    target_x_start = max(0, offset_x)
-    target_x_end = target_x_start + (t_x_end - t_x_start)
-    target_y_start = max(0, offset_y)
-    target_y_end = target_y_start + (t_y_end - t_y_start)
+    offset_x, offset_y = round(ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
+    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    # point들 정리
+    # a를 변환전 배열, b를 변환 후 배열
+    start_x_a = max(0, -offset_x)
+    start_y_a = max(0, -offset_y)
+    end_x_a = min(target_shape_x, nm_width - offset_x)
+    end_y_a = min(target_shape_y, nm_height - offset_y)
+    start_x_b = max(0, offset_x)
+    start_y_b = max(0, offset_y)
+    end_x_b = start_x_b + (end_x_a - start_x_a)
+    end_y_b = start_y_b + (end_y_a - start_y_a)
+    # 결과 이미지 초기화
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     for i, temp_slice in enumerate(label_image):
         temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
-        ret_image[i, target_y_start:target_y_end, target_x_start:target_x_end] = temp_ret_image[t_y_start:t_y_end,t_x_start:t_x_end]
+        temp_ret_image = temp_ret_image.astype(ret_image.dtype)
+        ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
     return ret_image
 
 
