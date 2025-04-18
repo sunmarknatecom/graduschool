@@ -218,6 +218,57 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     return ret_image
 
 
+# image process
+def to_red_image(src_images):
+    temp_image = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
+    temp_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in temp_image],dtype=np.uint8)
+    temp_image[:,:,:,2]=0
+    temp_image[:,:,:,1]=0
+    return temp_image
+
+def to_color_image(src_images):
+    #normalize
+    norm_images = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
+    return np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in norm_images], dtype=np.uint8)
+
+def only_seg_lb_image(src_lb_image, seg_n = 70):
+    return (src_lb_image == seg_n).astype(np.uint8)*seg_n
+
+def only_seg_lb_1ch_image(src_lb_image, seg_n = 70):
+    return (src_lb_image == seg_n).astype(np.uint8)
+
+def find_min_max_index(src_lb_image, seg_n = 70):
+    indices = np.argwhere(src_lb_image == seg_n)
+    return np.min(indices[:,0]), np.max(indices[:,0])
+
+def fusion_images(src1, src2):
+    if np.shape(src1) == np.shape(src2):
+        temp_out_image = np.zeros_like(src1)
+        for i, (temp_1_image, temp_2_image) in enumerate(zip(src1, src2)):
+            temp_out_image[i] = cv2.addWeighted(temp_1_image, 0.5, temp_2_image, 0.5, 0)
+        return temp_out_image
+    else:
+         print("error not equal shape")       
+
+def find_sig_index(arr):
+    ranges = []
+    start = None
+    for i, elem in enumerate(arr):
+        if elem != 0:
+            if start is None:
+                start = i
+        else:
+            if start is not None:
+                ranges.append((start, i))
+                start = None
+    if start is not None:
+        ranges.append((start, len(arr)))
+    return ranges
+
+def find_sig_frame(arr):
+    return [(np.sum(elem) !=0).astype(int) for elem in arr]
+
+
 def get_images(idx):
     '''
     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
@@ -233,15 +284,17 @@ def get_images(idx):
     return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in idx_list:
+for elem in idx_list[:10]:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
+    if np.shape(nm_image) == np.shape(lb_image):
+        continue
+    else:
+        end_ct_index = len(nm_image)
+        lb_image = lb_image[:end_ct_index]
     color_ct_image = to_color_image(ct_image)
     #red_lb_image = to_red_image(lb_image)
     red_nm_image = to_red_image(nm_image)
     out_fusion_image = fusion_images(color_ct_image, red_nm_image)
     plt.imshow(out_fusion_image[570])
-    plt.show(block=False)
-    plt.pause(3)
-    plt.close()
-    
+    plt.show()
