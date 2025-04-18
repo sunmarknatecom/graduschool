@@ -284,12 +284,10 @@ def get_images(idx):
     return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in idx_list[:10]:
+for elem in idx_list:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    if np.shape(nm_image) == np.shape(lb_image):
-        continue
-    else:
+    if np.shape(nm_image) != np.shape(lb_image):
         end_ct_index = len(nm_image)
         lb_image = lb_image[:end_ct_index]
         ct_image = ct_image[:end_ct_index]
