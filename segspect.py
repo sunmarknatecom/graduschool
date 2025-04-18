@@ -160,7 +160,7 @@ def transform_ct_image(ct_slices, nm_file_obj):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round(ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
+    offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
     start_x_a = max(0, -offset_x)
     start_y_a = max(0, -offset_y)
     end_x_a = min(target_shape_x, nm_width - offset_x)
@@ -196,7 +196,7 @@ def transform_label(ct_slices, nm_file_obj, label_image):
         nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round(ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
+    offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
     ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     # point들 정리
     # a를 변환전 배열, b를 변환 후 배열
