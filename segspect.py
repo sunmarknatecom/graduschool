@@ -292,6 +292,7 @@ for elem in idx_list[:10]:
     else:
         end_ct_index = len(nm_image)
         lb_image = lb_image[:end_ct_index]
+        ct_image = ct_image[:end_ct_index]
     color_ct_image = to_color_image(ct_image)
     #red_lb_image = to_red_image(lb_image)
     red_nm_image = to_red_image(nm_image)
