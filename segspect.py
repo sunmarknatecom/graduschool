@@ -241,5 +241,7 @@ for elem in idx_list:
     red_nm_image = to_red_image(nm_image)
     out_fusion_image = fusion_images(color_ct_image, red_nm_image)
     plt.imshow(out_fusion_image[570])
-    plt.show()
+    plt.show(block=False)
+    plt.pause(3)
+    plt.close()
     
