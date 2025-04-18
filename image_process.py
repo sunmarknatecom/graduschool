@@ -22,6 +22,15 @@ def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(src_lb_image == seg_n)
     return np.min(indices[:,0]), np.max(indices[:,0])
 
+def fusion_images(src1, src2):
+    if np.shape(src1) == np.shape(src2):
+        temp_out_image = np.zeros_like(src1)
+        for i, (temp_1_image, temp_2_image) in enumerate(zip(src1, src2)):
+            temp_out_image[i] = cv2.addWeighted(temp_1_image, 0.5, temp_2_image, 0.5, 0)
+        return temp_out_image
+    else:
+         print("error not equal shape")       
+
 def find_sig_index(arr):
     ranges = []
     start = None
