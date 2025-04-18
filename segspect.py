@@ -214,18 +214,27 @@ def transform_label(ct_slices, nm_file_obj, label_image):
 
 idx_list = [elem for elem in os.listdir() if os.path.isdir(elem)]
 
+def get_images(idx):
+    '''
+    return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
+    '''
+    temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
+    temp_ct_objs = open_CT(temp_ct_path)
+    temp_nm_obj = open_NM(temp_nm_path)
+    temp_lb_image = open_LB(temp_lb_path)
+    raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+    tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
+    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
+    re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
-
-
-# 파일 처리
-
-def main(idx_list):
-    out_list = []
-    for elem in idx_list:
-        temp_ct_objs = open_CT(get_paths(elem)[0])
-        temp_nm_obj = open_NM(get_paths(elem)[1])
-        temp_vars = get_transform_var(temp_ct_objs, temp_nm_obj)
-        valid_number = int(temp_vars["Last ID of NM"])-int(temp_vars["First ID of NM"])+1-len(temp_vars["IDs to delete"])
-        print(elem, temp_vars)
-        print(elem, temp_vars["Last ID of CT"], valid_number)
+print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
+for elem in idx_list:
+    raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
+    print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
+    color_ct_image = to_color_image(ct_image)
+    red_lb_image = to_red_image(lb_image)
+    out_fusion_image = fusion_images(color_ct_image, red_lb_image)
+    plt.imshow(out_fusion_image[570])
+    plt.show()
     
