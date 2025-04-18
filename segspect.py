@@ -299,3 +299,5 @@ for elem in idx_list:
     plt.show(block=False)
     plt.pause(2)
     plt.close()
+
+# 033 index는 CT 는 325~2082, NM은 -6부터 1886까지이면CT는 짤리지 않는데, NM을 기준으로 CT를 잘라도 일치하지 않음 확인
