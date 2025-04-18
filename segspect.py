@@ -3,6 +3,8 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 
+idx_list = os.listdir(".\\data\\")
+
 # file_util
 
 def get_paths(idx, root_path = ".\\data\\"):
@@ -117,6 +119,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
     # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
     final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
+    final_skip_index = np.array(final_skip_index, dtype=np.int32)
     return {
         "First ID of NM": nm_start_index,
         "Last ID of NM": nm_end_index,
@@ -215,8 +218,6 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     return ret_image
 
 
-idx_list = [elem for elem in os.listdir(".\\data\\") if os.path.isdir(elem)]
-
 def get_images(idx):
     '''
     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
@@ -236,8 +237,9 @@ for elem in idx_list:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
     color_ct_image = to_color_image(ct_image)
-    red_lb_image = to_red_image(lb_image)
-    out_fusion_image = fusion_images(color_ct_image, red_lb_image)
+    #red_lb_image = to_red_image(lb_image)
+    red_nm_image = to_red_image(nm_image)
+    out_fusion_image = fusion_images(color_ct_image, red_nm_image)
     plt.imshow(out_fusion_image[570])
     plt.show()
     
