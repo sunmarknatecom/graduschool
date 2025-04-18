@@ -3,8 +3,6 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 
-idx_list = os.listdir(".\\data\\")
-
 # file_util
 
 def get_paths(idx, root_path = ".\\data\\"):
