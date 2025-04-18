@@ -215,7 +215,7 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     return ret_image
 
 
-idx_list = [elem for elem in os.listdir() if os.path.isdir(elem)]
+idx_list = [elem for elem in os.listdir(".\\data\\") if os.path.isdir(elem)]
 
 def get_images(idx):
     '''
