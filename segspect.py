@@ -281,9 +281,12 @@ def get_images(idx):
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
+    temp_variables = get_transform_var(temp_ct_objs, temp_nm_obj)
+    temp_skip_list = temp_variables["final result"]
+    st_no = temp_variables["First ID of CT"]
+    ed_no = temp_variables["Last ID of CT"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
+    return raw_temp_ct_image[st_no:ed_no+1], temp_lb_image[st_no:ed_no+1], tr_temp_ct_image[st_no:ed_no+1], re_nm_image, tr_temp_lb_image[st_no:ed_no+1]
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in idx_list:
