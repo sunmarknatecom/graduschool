@@ -120,8 +120,6 @@ def get_transform_var(ct_slices, nm_file_obj):
     # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
     final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
     final_skip_index = np.array(final_skip_index, dtype=np.int32)
-    if ct_start_index > 0:
-        delete_ct_index np.delete(delete
     return {
         "First ID of NM": nm_start_index,
         "Last ID of NM": nm_end_index,
