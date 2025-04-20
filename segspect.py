@@ -36,6 +36,9 @@ def open_LB(FolderPath = ".//TEST_LB//"):
 def create_ct_image(ct_objs):
     return np.array(np.array([elem.pixel_array for elem in ct_objs])*float(ct_objs[0].RescaleSlope)+float(ct_objs[0].RescaleIntercept),dtype=np.int16)
 
+import numpy as np
+import copy
+
 def get_transform_var(ct_slices, nm_file_obj):
     """
     ct_slices = objects list of CT
@@ -49,7 +52,9 @@ def get_transform_var(ct_slices, nm_file_obj):
             "Last ID of CT": ct_end_index,
             "Length of CT ID": len(ct_slice_locations),
             "Length of NM ID": len(filtered_nm_slices),
-            "IDs to delete": list(removed_nm_slices.keys())
+            "IDs to delete": list(removed_nm_slices.keys()),
+            "delete ct index": list(delete_ct_indices),
+            "final result": final_skip_index
         }
     """
     # CT 데이터 처리
@@ -58,9 +63,10 @@ def get_transform_var(ct_slices, nm_file_obj):
     ct_slice_locations = {}
     for i, slice in enumerate(ct_slices):
         ct_slice_locations[i] = float(slice.SliceLocation)
+
     # NM 데이터 처리
     if "ImagePositionPatient" in nm_file_obj:
-        nm_start_position = float(nm_file_obj["ImagePositionPatient"].value[2])  # 위치 정보
+        nm_start_position = float(nm_file_obj["ImagePositionPatient"].value[2])
     else:
         nm_start_position = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[2])
     nm_slice_locations = {}
@@ -68,7 +74,8 @@ def get_transform_var(ct_slices, nm_file_obj):
     num_nm_slices = nm_file_obj.NumberOfFrames
     for i in range(num_nm_slices):
         nm_slice_locations[i] = float(nm_start_position + i * nm_slice_thickness)
-    # CT-NM 정렬 지점 찾기 (NM 시작 인덱스 구하기)
+
+    # CT-NM 정렬 지점 찾기
     first_ct_location = next(iter(ct_slice_locations.values()))
     min_diff = float('inf')
     nm_start_index = None
@@ -77,6 +84,7 @@ def get_transform_var(ct_slices, nm_file_obj):
         if diff < min_diff:
             min_diff = diff
             nm_start_index = key
+
     # NM 슬라이스 필터링
     filtered_nm_slices = {}
     found_start = False
@@ -88,10 +96,12 @@ def get_transform_var(ct_slices, nm_file_obj):
                 found_start = True
     else:
         filtered_nm_slices = copy.copy(nm_slice_locations)
+
     # NM 슬라이스 정리
     removed_nm_slices = {}
+    delete_ct_indices = []  # <<< 추가된 리스트
     num_ct_slices = len(ct_slice_locations)
-    num_nm_slices = list(filtered_nm_slices.keys())[-1] # ref1 마지막슬라이스 번호가 갯수에서 -1 
+    num_nm_slices = list(filtered_nm_slices.keys())[-1]
     ct_index = 0
     nm_index = list(filtered_nm_slices.keys())[0]
     nm_slices_to_remove = []
@@ -102,24 +112,35 @@ def get_transform_var(ct_slices, nm_file_obj):
             nm_slices_to_remove.append(nm_index)
             removed_nm_slices[nm_index] = filtered_nm_slices[nm_index]
             nm_index += 1
-            iteration_count += 1
+        elif diff <= -1.23:
+            delete_ct_indices.append(ct_index)  # <<< CT 슬라이스가 NM보다 앞서면 제거
+            ct_index += 1
         else:
             ct_index += 1
             nm_index += 1
-            iteration_count += 1
+        iteration_count += 1
+
     for elem in nm_slices_to_remove:
         del filtered_nm_slices[elem]
+
     # 매칭되는 CT 시작 슬라이스 번호 찾기
     first_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[0]]
     ct_start_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - first_nm_location))
+
     # 매칭되는 CT 마지막 슬라이스 번호 찾기
     last_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[-1]]
     ct_end_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - last_nm_location))
-    # CT와 매칭되는 마지막 NM 슬라이스 번호 찾기
+
+    # NM 마지막 인덱스 (CT에 맞춘)
     nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
-    # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
-    final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
+
+    final_skip_index = np.concatenate((
+        np.arange(nm_start_index),
+        np.array(list(removed_nm_slices.keys())),
+        np.arange(nm_end_index + 1, num_nm_slices + 1)
+    ))
     final_skip_index = np.array(final_skip_index, dtype=np.int32)
+
     return {
         "First ID of NM": nm_start_index,
         "Last ID of NM": nm_end_index,
@@ -128,8 +149,10 @@ def get_transform_var(ct_slices, nm_file_obj):
         "Length of CT ID": len(ct_slice_locations),
         "Length of NM ID": len(filtered_nm_slices),
         "IDs to delete": list(removed_nm_slices.keys()),
+        "delete ct index": delete_ct_indices,  # <<< 추가된 반환값
         "final result": final_skip_index
     }
+
 
 def realign_nm_image(nm_file_obj, nm_slices_to_remove):
     """
