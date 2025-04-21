@@ -65,7 +65,7 @@ def get_transform_var(ct_slices, nm_file_obj):
         nm_start_position = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[2])
     nm_slice_locations = {}
     nm_slice_thickness = float(nm_file_obj.SliceThickness)
-    num_nm_slices = nm_file_obj.NumberOfFrames
+    num_nm_slices = int(nm_file_obj.NumberOfFrames)
     for i in range(num_nm_slices):
         nm_slice_locations[i] = float(nm_start_position + i * nm_slice_thickness)
     # CT-NM 정렬 지점 찾기 (NM 시작 인덱스 구하기)
