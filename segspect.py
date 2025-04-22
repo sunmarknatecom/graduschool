@@ -321,11 +321,12 @@ def get_images(idx):
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
     temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
+    temp_ct_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["delete CT index"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    re_raw_ct_image = realign_ct_image(raw_temp_ct_image)
-    re_raw_lb_image = realign_ct_image(temp_lb_image)
-    re_tr_ct_image = realign_ct_image(tr_temp_ct_image)
-    re_tr_lb_image = realign_ct_image(tr_temp_lb_image)
+    re_raw_ct_image = realign_ct_image(raw_temp_ct_image, temp_ct_skip_list)
+    re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
+    re_tr_ct_image = realign_ct_image(tr_temp_ct_image, temp_ct_skip_list)
+    re_tr_lb_image = realign_ct_image(tr_temp_lb_image, temp_ct_skip_list)
     return re_raw_ct_image, re_raw_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
