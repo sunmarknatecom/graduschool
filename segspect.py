@@ -83,7 +83,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     elif (nm_slice_locations[0] - ct_slice_locations[0]) <= 1.23:
         ct_start_index = 0
         nm_start_index = 0
-    else: 
+    else:
         nm_start_index = 0
         ct_start_index = None
         min_diff = float('inf')
@@ -93,77 +93,76 @@ def get_transform_var(ct_slices, nm_file_obj):
                 min_diff = diff
                 ct_start_index = key
     # ct_start_index와 nm_start_index
-    # NM 슬라이스 필터링
-    filtered_nm_slices = {}
-    found_start = False
+    # NM 앞부분 트리밍밍
+    trim_head_nm_slices = {}
+    found_nm_start = False
     if nm_start_index != 0:
         for key, value in nm_slice_locations.items():
-            if found_start:
-                filtered_nm_slices[key] = value
+            if found_nm_start:
+                trim_head_nm_slices[key] = value
             if key == (nm_start_index - 1):
-                found_start = True
+                found_nm_start = True
     else:
-        filtered_nm_slices = copy.copy(nm_slice_locations)
+        trim_head_nm_slices = copy.copy(nm_slice_locations)
+    trim_head_ct_slices = {}
+    found_ct_start  = False
+    if ct_start_index != 0:
+        for key, value in ct_slice_locations.items():
+            if found_ct_start:
+                trim_head_ct_slices[key] = value
+            if key == (ct_start_index - 1):
+                found_ct_start = True
+    else:
+        trim_head_ct_slices = copy.copy(ct_slice_locations)
     # NM 슬라이스 정리
-    removed_nm_slices = {}
-    num_ct_slices = len(ct_slice_locations)
-    num_nm_slices = list(filtered_nm_slices.keys())[-1] # ref1 마지막슬라이스 번호가 갯수에서 -1 
+    num_ct_slices = len(trim_head_ct_slices)
+    num_nm_slices = list(trim_head_nm_slices.keys())[-1] # ref1 마지막슬라이스 번호가 갯수에서 -1 
     ct_index = 0
     nm_index = 0
     nm_slices_to_remove = []
-    iteration_count = 0
     # 수정시작
     list_ct_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(trim_head_ct_slices.items())]
     list_nm_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(trim_head_nm_slices.items())]
-    for i in range(len(list_ct_slice_locations)):
+    while ct_index < num_ct_slices:
         try:
-            diff = abs(list_ct_slice_locations[i][1][1]-list_nm_slice_locations[i][1][1])
+            diff = abs(list_ct_slice_locations[ct_index][1][1]-list_nm_slice_locations[nm_index][1][1])
             if diff >= 1.23:
-                nm_slices_to_remove.append(list_nm_slice_locations[i][1][0])
-                removed_nm_slices[nm_index]
+                nm_slices_to_remove.append(list_nm_slice_locations[nm_index][1][0])
                 nm_index +=1
-                iteration_count +=1
+                # print("     ", i, diff, list_nm_slice_locations[nm_index][1][0], nm_index, ct_index, iteration_count)
             else:
                 ct_index +=1
                 nm_index +=1
-                iteration_count +=1
+                # print("case2", i, diff, list_nm_slice_locations[nm_index][1][0], nm_index, ct_index, iteration_count)
         except:
-            pass
-    ct_end_index = list_ct_slice_locations[ct_index][0]
-    nm_end_index = list_nm_slice_locations[nm_index][0]
-    
-    while (ct_index < num_ct_slices) and (nm_index <= num_nm_slices):
-        diff = ct_slice_locations[ct_index] - filtered_nm_slices[nm_index]
-        if diff >= 1.23:
-            nm_slices_to_remove.append(nm_index)
-            removed_nm_slices[nm_index] = filtered_nm_slices[nm_index]
-            nm_index += 1
-            iteration_count += 1
-        else:
-            ct_index += 1
-            nm_index += 1
-            iteration_count += 1
-    for elem in nm_slices_to_remove:
-        del filtered_nm_slices[elem]
+            break
+            # print("    3", "end CT", ct_index, "end NM", nm_index)
+    ct_end_index = list_ct_slice_locations[ct_index-1][1][0]
+    nm_end_index = list_nm_slice_locations[nm_index-1][1][0]
     # 매칭되는 CT 시작 슬라이스 번호 찾기
-    first_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[0]]
-    ct_start_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - first_nm_location))
-    # 매칭되는 CT 마지막 슬라이스 번호 찾기
-    last_nm_location = filtered_nm_slices[list(filtered_nm_slices.keys())[-1]]
-    ct_end_index = min(ct_slice_locations, key=lambda k: abs(ct_slice_locations[k] - last_nm_location))
-    # CT와 매칭되는 마지막 NM 슬라이스 번호 찾기
-    nm_end_index = min(filtered_nm_slices, key=lambda k: abs(filtered_nm_slices[k] - ct_slice_locations[ct_end_index]))
-    # num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
-    final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(list(removed_nm_slices.keys())), np.arange(nm_end_index+1,num_nm_slices+1)))
+    #  num_nm_slices가 ref1에서 -1이 되어 다시 1을 더하여 복원
+    final_skip_index = np.concatenate((np.arange(nm_start_index),np.array(nm_slices_to_remove), np.arange(nm_end_index+1,num_nm_slices+1)))
     final_skip_index = np.array(final_skip_index, dtype=np.int32)
+    final_nm_slices = np.delete(nm_file_obj.pixel_array, final_skip_index, axis=0)
+    if ct_start_index != 0:
+        head_trim_ct_index = np.arange(0, ct_start_index, dtype=np.int32)
+    else:
+        head_trim_ct_index = np.array([], dtype=np.int32)
+    if nm_end_index != num_nm_slices - 1:
+        tail_trim_ct_index = np.arange(ct_end_index + 1, num_ct_slices, dtype=np.int32)
+    else:
+        tail_trim_ct_index = np.array([], dtype=np.int32)
+    ct_skip_index = np.concatenate((head_trim_ct_index, tail_trim_ct_index))
     return {
         "First ID of NM": nm_start_index,
         "Last ID of NM": nm_end_index,
         "First ID of CT": ct_start_index,
         "Last ID of CT": ct_end_index,
-        "Length of CT ID": len(ct_slice_locations),
-        "Length of NM ID": len(filtered_nm_slices),
-        "IDs to delete": list(removed_nm_slices.keys()),
+        "Length of CT ID": ct_end_index - ct_start_index + 1,
+        "Length of NM ID": np.shape(final_nm_slices)[0],
+        "calculated lengh of NM ID": nm_end_index - nm_start_index + 1 - len(final_skip_index),
+        "delete CT index":ct_skip_index,
+        "IDs to delete": nm_slices_to_remove,
         "final result": final_skip_index
     }
 
