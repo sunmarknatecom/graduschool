@@ -113,13 +113,14 @@ def get_transform_var(ct_slices, nm_file_obj):
     nm_slices_to_remove = []
     iteration_count = 0
     # 수정시작
-    list_ct_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(ct_slice_locations.items())]
-    list_nm_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(filtered_nm_slices.items())]
-    for i in range(list_ct_slice_locations):
+    list_ct_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(trim_head_ct_slices.items())]
+    list_nm_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(trim_head_nm_slices.items())]
+    for i in range(len(list_ct_slice_locations)):
         try:
-            diff = abs(list_ct_slice_locations[i][1]-list_nm_slice_locations[i][1])
+            diff = abs(list_ct_slice_locations[i][1][1]-list_nm_slice_locations[i][1][1])
             if diff >= 1.23:
-                nm_slices_to_remove.append(list_nm_slice_locations[i](0))
+                nm_slices_to_remove.append(list_nm_slice_locations[i][1][0])
+                removed_nm_slices[nm_index]
                 nm_index +=1
                 iteration_count +=1
             else:
