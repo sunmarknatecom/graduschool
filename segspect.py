@@ -178,6 +178,12 @@ def realign_nm_image(nm_file_obj, nm_slices_to_remove):
     ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
     return ret_image
 
+def realign_ct_image(ct_image, ct_skip_list):
+    if len(ct_skip_list) != 0:
+        return np.delete(ct_image, ct_skip_list, axis=0)
+    else:
+        return ct_image
+
 def transform_ct_image(ct_slices, nm_file_obj):
     ct_frames = len(ct_slices)
     ct_width, ct_height = ct_slices[0].pixel_array.shape
@@ -316,22 +322,24 @@ def get_images(idx):
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
     temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
+    re_raw_ct_image = realign_ct_image(raw_temp_ct_image)
+    re_raw_lb_image = realign_ct_image(temp_lb_image)
+    re_tr_ct_image = realign_ct_image(tr_temp_ct_image)
+    re_tr_lb_image = realign_ct_image(tr_temp_lb_image)
+    return re_raw_ct_image, re_raw_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in ["033"]:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    if np.shape(nm_image) != np.shape(lb_image):
-        end_ct_index = len(nm_image)
-        lb_image = lb_image[:end_ct_index]
-        ct_image = ct_image[:end_ct_index]
     color_ct_image = to_color_image(ct_image)
     #red_lb_image = to_red_image(lb_image)
-    red_nm_image = to_red_image(nm_image)
-    out_fusion_image = fusion_images(color_ct_image, red_nm_image)
-    plt.imshow(out_fusion_image[570])
-    plt.show()
+    # #
+    # red_nm_image = to_red_image(nm_image)
+    # out_fusion_image = fusion_images(color_ct_image, red_nm_image)
+    # plt.imshow(out_fusion_image[570])
+    # plt.show()
+    #
     # plt.show(block=False)
     # plt.pause(2)
     # plt.close()
