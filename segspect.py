@@ -329,7 +329,7 @@ def get_images(idx):
     re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
     re_tr_ct_image = realign_ct_image(tr_temp_ct_image, temp_ct_skip_list)
     re_tr_lb_image = realign_ct_image(tr_temp_lb_image, temp_ct_skip_list)
-    return re_raw_ct_image, re_raw_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
+    return re_raw_ct_image, re_raw_lb_image, re_tr_ct_image, re_nm_image, re_tr_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in ["033"]:
