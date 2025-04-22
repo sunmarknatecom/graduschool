@@ -320,7 +320,7 @@ def get_images(idx):
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     # to raw data
-    transform_vars = get_traansform_var(temp_ct_objs, temp_nm_obj)
+    transform_vars = get_transform_var(temp_ct_objs, temp_nm_obj)
     temp_skip_list = transform_vars["final result"]
     temp_ct_skip_list = transform_vars["delete CT index"]
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
