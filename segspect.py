@@ -114,7 +114,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     iteration_count = 0
 
     # 수정시작
-    for i, (key, value) in enumerate(zip(list(ct_slice_locations.keys())[ct_start_index:100], list(ct_slice_locations.values())[ct_start_index:100])):
+    for i, (key, value) in enumerate(zip(list(ct_slice_locations.keys())[ct_start_index:], list(ct_slice_locations.values())[ct_start_index:])):
         print(i, key, value)
     while (ct_index < num_ct_slices) and (nm_index <= num_nm_slices):
         diff = ct_slice_locations[ct_index] - filtered_nm_slices[nm_index]
