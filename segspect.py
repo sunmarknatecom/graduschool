@@ -332,7 +332,7 @@ def get_images(idx):
     return re_raw_ct_image, re_raw_lb_image, re_tr_ct_image, re_nm_image, re_tr_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in ["033"]:
+for elem in idx_list[:10]:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
     # color_ct_image = to_color_image(ct_image)
