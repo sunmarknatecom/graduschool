@@ -109,10 +109,9 @@ def get_transform_var(ct_slices, nm_file_obj):
     num_ct_slices = len(ct_slice_locations)
     num_nm_slices = list(filtered_nm_slices.keys())[-1] # ref1 마지막슬라이스 번호가 갯수에서 -1 
     ct_index = 0
-    nm_index = list(filtered_nm_slices.keys())[0]
+    nm_index = 0
     nm_slices_to_remove = []
     iteration_count = 0
-
     # 수정시작
     list_ct_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(ct_slice_locations.items())]
     list_nm_slice_locations = [[i, (k, v)] for i, (k, v) in enumerate(filtered_nm_slices.items())]
@@ -121,9 +120,17 @@ def get_transform_var(ct_slices, nm_file_obj):
             diff = abs(list_ct_slice_locations[i][1]-list_nm_slice_locations[i][1])
             if diff >= 1.23:
                 nm_slices_to_remove.append(list_nm_slice_locations[i](0))
+                nm_index +=1
+                iteration_count +=1
+            else:
+                ct_index +=1
+                nm_index +=1
+                iteration_count +=1
         except:
             pass
-
+    ct_end_index = list_ct_slice_locations[ct_index][0]
+    nm_end_index = list_nm_slice_locations[nm_index][0]
+    
     while (ct_index < num_ct_slices) and (nm_index <= num_nm_slices):
         diff = ct_slice_locations[ct_index] - filtered_nm_slices[nm_index]
         if diff >= 1.23:
