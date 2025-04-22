@@ -65,18 +65,34 @@ def get_transform_var(ct_slices, nm_file_obj):
         nm_start_position = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[2])
     nm_slice_locations = {}
     nm_slice_thickness = float(nm_file_obj.SliceThickness)
-    num_nm_slices = int(nm_file_obj.NumberOfFrames)
+    num_nm_slices = nm_file_obj.NumberOfFrames
     for i in range(num_nm_slices):
         nm_slice_locations[i] = float(nm_start_position + i * nm_slice_thickness)
-    # CT-NM 정렬 지점 찾기 (NM 시작 인덱스 구하기)
+    # CT-NM 정렬 지점 찾기 (NM, CT 시작 인덱스 구하기)
     first_ct_location = next(iter(ct_slice_locations.values()))
-    min_diff = float('inf')
-    nm_start_index = None
-    for key, value in nm_slice_locations.items():
-        diff = abs(first_ct_location - value)
-        if diff < min_diff:
-            min_diff = diff
-            nm_start_index = key
+    first_nm_location = next(iter(nm_slice_locations.values()))
+    if nm_slice_locations[0] <= ct_slice_locations[0]:
+        ct_start_index = 0
+        nm_start_index = None
+        min_diff = float('inf')
+        for key, value in nm_slice_locations.items():
+            diff = abs(first_ct_location - value)
+            if diff < min_diff:
+                min_diff = diff
+                nm_start_index = key
+    elif (nm_slice_locations[0] - ct_slice_locations[0]) <= 1.23:
+        ct_start_index = 0
+        nm_start_index = 0
+    else: 
+        nm_start_index = 0
+        ct_start_index = None
+        min_diff = float('inf')
+        for key, value in ct_slice_locations.items():
+            diff = abs(first_nm_location - value)
+            if diff < min_diff:
+                min_diff = diff
+                ct_start_index = key
+    # ct_start_index와 nm_start_index
     # NM 슬라이스 필터링
     filtered_nm_slices = {}
     found_start = False
@@ -96,6 +112,10 @@ def get_transform_var(ct_slices, nm_file_obj):
     nm_index = list(filtered_nm_slices.keys())[0]
     nm_slices_to_remove = []
     iteration_count = 0
+
+    # 수정시작
+    for i, (key, value) in enumerate(zip(list(ct_slice_locations.keys())[ct_start_index:100], list(ct_slice_locations.values())[ct_start_index:100])):
+        print(i, key, value)
     while (ct_index < num_ct_slices) and (nm_index <= num_nm_slices):
         diff = ct_slice_locations[ct_index] - filtered_nm_slices[nm_index]
         if diff >= 1.23:
@@ -279,24 +299,24 @@ def get_images(idx):
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-    temp_variables = get_transform_var(temp_ct_objs, temp_nm_obj)
-    temp_skip_list = temp_variables["final result"]
-    st_no = temp_variables["First ID of CT"]
-    ed_no = temp_variables["Last ID of CT"]
+    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    return raw_temp_ct_image[st_no:ed_no+1], temp_lb_image[st_no:ed_no+1], tr_temp_ct_image[st_no:ed_no+1], re_nm_image, tr_temp_lb_image[st_no:ed_no+1]
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in idx_list:
+for elem in ["033"]:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    #red_lb_image = to_red_image(lb_image)
+    if np.shape(nm_image) != np.shape(lb_image):
+        end_ct_index = len(nm_image)
+        lb_image = lb_image[:end_ct_index]
+        ct_image = ct_image[:end_ct_index]
     color_ct_image = to_color_image(ct_image)
+    #red_lb_image = to_red_image(lb_image)
     red_nm_image = to_red_image(nm_image)
     out_fusion_image = fusion_images(color_ct_image, red_nm_image)
     plt.imshow(out_fusion_image[570])
-    plt.show(block=False)
-    plt.pause(2)
-    plt.close()
-
-# 033 index는 CT 는 325~2082, NM은 -6부터 1886까지이면CT는 짤리지 않는데, NM을 기준으로 CT를 잘라도 일치하지 않음 확인
+    plt.show()
+    # plt.show(block=False)
+    # plt.pause(2)
+    # plt.close()
