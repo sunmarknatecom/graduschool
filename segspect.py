@@ -319,9 +319,11 @@ def get_images(idx):
     temp_nm_obj = open_NM(temp_nm_path)
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+    # to raw data
+    transform_vars = get_traansform_var(temp_ct_objs, temp_nm_obj)
+    temp_skip_list = transform_vars["final result"]
+    temp_ct_skip_list = transform_vars["delete CT index"]
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
-    temp_ct_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["delete CT index"]
     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
     re_raw_ct_image = realign_ct_image(raw_temp_ct_image, temp_ct_skip_list)
     re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
@@ -333,8 +335,8 @@ print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in ["033"]:
     raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
     print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    color_ct_image = to_color_image(ct_image)
-    #red_lb_image = to_red_image(lb_image)
+    # color_ct_image = to_color_image(ct_image)
+    # red_lb_image = to_red_image(lb_image)
     # #
     # red_nm_image = to_red_image(nm_image)
     # out_fusion_image = fusion_images(color_ct_image, red_nm_image)
