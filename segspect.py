@@ -184,6 +184,25 @@ def realign_ct_image(ct_image, ct_skip_list):
     else:
         return ct_image
 
+def realign_lb_image(src_nm_image, lb_image, nm_start_index, lb_start_index, inserted_locations):
+    inserted_locations = set(inserted_locations)
+    nm_image = np.zeros_like(src_nm_image, dtype=np.int16)
+    nm_index = nm_start_index
+    lb_index = lb_start_index
+    prev_frame = None
+    while nm_index < nm_image.shape[0]:
+        if nm_index in inserted_locations and prev_frame is not None:
+            nm_image[nm_index] = prev_frame
+        else:
+            if lb_index >= lb_image.shape[0]:
+                print("label image처리가 완료되었습니다.")
+                break
+            nm_image[nm_index] = lb_image[lb_index]
+            prev_frame = lb_image[lb_index]
+            lb_index +=1
+        nm_index +=1
+    return nm_image
+
 def transform_ct_image(ct_slices, nm_file_obj):
     ct_frames = len(ct_slices)
     ct_width, ct_height = ct_slices[0].pixel_array.shape
@@ -310,6 +329,27 @@ def find_sig_frame(arr):
     return [(np.sum(elem) !=0).astype(int) for elem in arr]
 
 
+# def get_images(idx):
+#     '''
+#     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
+#     '''
+#     temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
+#     temp_ct_objs = open_CT(temp_ct_path)
+#     temp_nm_obj = open_NM(temp_nm_path)
+#     temp_lb_image = open_LB(temp_lb_path)
+#     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+#     # to raw data
+#     transform_vars = get_transform_var(temp_ct_objs, temp_nm_obj)
+#     temp_skip_list = transform_vars["final result"]
+#     temp_ct_skip_list = transform_vars["delete CT index"]
+#     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
+#     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
+#     re_raw_ct_image = realign_ct_image(raw_temp_ct_image, temp_ct_skip_list)
+#     re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
+#     re_tr_ct_image = realign_ct_image(tr_temp_ct_image, temp_ct_skip_list)
+#     re_tr_lb_image = realign_ct_image(tr_temp_lb_image, temp_ct_skip_list)
+#     return re_raw_ct_image, re_raw_lb_image, re_tr_ct_image, re_nm_image, re_tr_lb_image
+
 def get_images(idx):
     '''
     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
@@ -317,6 +357,7 @@ def get_images(idx):
     temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
     temp_ct_objs = open_CT(temp_ct_path)
     temp_nm_obj = open_NM(temp_nm_path)
+    temp_nm_image = temp_nm_obj.pixel_array
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     # to raw data
@@ -324,12 +365,7 @@ def get_images(idx):
     temp_skip_list = transform_vars["final result"]
     temp_ct_skip_list = transform_vars["delete CT index"]
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-    re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    re_raw_ct_image = realign_ct_image(raw_temp_ct_image, temp_ct_skip_list)
-    re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
-    re_tr_ct_image = realign_ct_image(tr_temp_ct_image, temp_ct_skip_list)
-    re_tr_lb_image = realign_ct_image(tr_temp_lb_image, temp_ct_skip_list)
-    return re_raw_ct_image, re_raw_lb_image, re_tr_ct_image, re_nm_image, re_tr_lb_image
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, re_tr_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in idx_list:
