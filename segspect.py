@@ -367,7 +367,7 @@ def get_images(idx):
     temp_skip_list = transform_vars["final result"]
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
     rn_tr_lb_image = realign_lb_image(temp_nm_image,tr_temp_lb_image, nm_start_index, lb_start_index, temp_skip_list)
-    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, re_tr_lb_image
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, rn_tr_lb_image
 
 print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 for elem in idx_list:
