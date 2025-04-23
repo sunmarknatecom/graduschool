@@ -202,3 +202,14 @@ for elem in idx_list:
     plt.imshow(out_fusion_image[570])
     plt.show()
 
+cidx_list = [37, 39, 44, 55, 61, 74, 146, 164, 186, 206, 207, 233, 240, 246, 247, 254, 255]
+cidx_list = [f"{i:03d}" for i in cidx_list]
+
+for elem in cidx_list:
+    raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
+    shape0s = [np.shape(raw_ct_image)[0], np.shape(raw_lb_image)[0],
+               np.shape(ct_image)[0], np.shape(nm_image)[0], np.shape(lb_image)[0]]
+    all_equal = all(s == shape0s[0] for s in shape0s)
+    print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image),
+          np.shape(ct_image), np.shape(nm_image), np.shape(lb_image),
+          "OK!" if all_equal else "")
