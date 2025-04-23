@@ -80,7 +80,7 @@ def get_transform_var(ct_slices, nm_file_obj):
             if diff < min_diff:
                 min_diff = diff
                 nm_start_index = key
-    elif (nm_slice_locations[0] - ct_slice_locations[0]) <= 1.23:
+    elif (nm_slice_locations[0] - ct_slice_locations[0]) <= 1.25:
         ct_start_index = 0
         nm_start_index = 0
     else:
