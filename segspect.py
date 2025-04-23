@@ -126,7 +126,7 @@ def get_transform_var(ct_slices, nm_file_obj):
     while ct_index < num_ct_slices:
         try:
             diff = abs(list_ct_slice_locations[ct_index][1][1]-list_nm_slice_locations[nm_index][1][1])
-            if diff >= 1.23:
+            if diff >= 1.25:
                 nm_slices_to_remove.append(list_nm_slice_locations[nm_index][1][0])
                 nm_index +=1
                 # print("     ", i, diff, list_nm_slice_locations[nm_index][1][0], nm_index, ct_index, iteration_count)
