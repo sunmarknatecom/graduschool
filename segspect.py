@@ -284,13 +284,13 @@ def to_1RGB_image(src_images, color="R"):
     temp_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in temp_image],dtype=np.uint8)
     try:
         if color == "R":
-            temp_image[:,:,:,2]=0
             temp_image[:,:,:,1]=0
+            temp_image[:,:,:,2]=0
         elif color == "G":
-            temp_image[:,:,:,2]=0
             temp_image[:,:,:,1]=0
-        elif color == "B":
             temp_image[:,:,:,2]=0
+        elif color == "B":
+            temp_image[:,:,:,0]=0
             temp_image[:,:,:,1]=0
         else:
             print("only select in 'R' or 'G' or 'B'")
