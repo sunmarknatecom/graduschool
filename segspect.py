@@ -423,6 +423,7 @@ nm_image = nm_obj.pixel_array
 raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(idx)
 transform_vars = get_transform_var(ct_objs, nm_obj) 
 nm_start_index = transform_vars["First ID of NM"]
+nm_end_index = transform_vars["Last ID of NM"]
 lb_start_index = transform_vars["First ID of CT"]
 temp_skip_list = transform_vars["final result"]
 
@@ -431,7 +432,7 @@ for elem_bone in bones_index:
     raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
     # single_lb_images.append(raw_1ch_lb_image)
     raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_lb_image)
-    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, lb_start_index, temp_skip_list)
+    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
     single_lb_images[elem_bone] = raw_1ch_lb_image
 
 for i, (bone_id, image) in enumerate(single_lb_images.items()):
