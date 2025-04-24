@@ -189,7 +189,7 @@ def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, inser
         src_nm_index = list(range(nm_start_index, nm_end_index+1))
         ret_insert_index = []
         for i, val in enumerate(src_nm_index):
-            ret_insert_indext.append(val)
+            ret_insert_index.append(val)
             if val in insert_locations:
                 ret_insert_index.append(val)
         ret_lb_image = np.zeros_like(src_nm_image, dtype=np.int16)
