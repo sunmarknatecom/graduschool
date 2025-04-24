@@ -418,9 +418,10 @@ organs = {1 : "spleen", 2 : "kidney_right", 3 : "kidney_left", 4 : "gallbladder"
 idx = "003"
 raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(idx)
 
-single_lb_images = []
+single_lb_images = {}
 for elem_bone in bones_index:
     raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
-    single_lb_images.append(raw_1ch_lb_image)
+    # single_lb_images.append(raw_1ch_lb_image)
+    single_lb_images[elem_bone] = raw_1ch_lb_image
     
     
