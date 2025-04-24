@@ -287,7 +287,7 @@ def to_1RGB_image(src_images, color="R"):
             temp_image[:,:,:,1]=0
             temp_image[:,:,:,2]=0
         elif color == "G":
-            temp_image[:,:,:,1]=0
+            temp_image[:,:,:,0]=0
             temp_image[:,:,:,2]=0
         elif color == "B":
             temp_image[:,:,:,0]=0
