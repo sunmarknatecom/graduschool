@@ -260,7 +260,6 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
     offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
-    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
     # point들 정리
     # a를 변환전 배열, b를 변환 후 배열
     start_x_a = max(0, -offset_x)
@@ -272,12 +271,18 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     end_x_b = start_x_b + (end_x_a - start_x_a)
     end_y_b = start_y_b + (end_y_a - start_y_a)
     # 결과 이미지 초기화
-    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
-    for i, temp_slice in enumerate(label_image):
-        temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
-        temp_ret_image = temp_ret_image.astype(ret_image.dtype)
-        ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
-    return ret_image
+    ret_sum_image = []
+    for elem in bones_index:
+        ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+        for i, temp_slice in enumerate(label_image):
+            temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
+            temp_ret_image = temp_ret_image.astype(ret_image.dtype)
+            ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
+        ret_sum_image.append((src_lb_image == elem).astype(np.uint8))
+    dst_image = np.array[ret_sum_image[0]
+    for elem2 in ret_sum_image[1:]:
+        dst_image = dst_image + elem2
+    return dst_image
 
 
 # image process
