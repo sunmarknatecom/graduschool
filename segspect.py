@@ -278,7 +278,7 @@ def transform_label(ct_slices, nm_file_obj, label_image):
             temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
             temp_ret_image = temp_ret_image.astype(ret_image.dtype)
             ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
-        ret_sum_image.append((src_lb_image == elem).astype(np.uint8))
+        ret_sum_image.append((ret_image == elem).astype(np.uint8))
     dst_image = np.array[ret_sum_image[0]
     for elem2 in ret_sum_image[1:]:
         dst_image = dst_image + elem2
