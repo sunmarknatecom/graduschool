@@ -432,7 +432,7 @@ single_lb_images = {}
 for elem_bone in bones_index:
     raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
     # single_lb_images.append(raw_1ch_lb_image)
-    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_lb_image)
+    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1초_lb_image)
     raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
     single_lb_images[elem_bone] = raw_1ch_lb_image
 
