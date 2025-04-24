@@ -271,18 +271,12 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     end_x_b = start_x_b + (end_x_a - start_x_a)
     end_y_b = start_y_b + (end_y_a - start_y_a)
     # 결과 이미지 초기화
-    ret_sum_image = []
-    for elem in bones_index:
-        ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
-        for i, temp_slice in enumerate(label_image):
-            temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
-            temp_ret_image = temp_ret_image.astype(ret_image.dtype)
-            ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
-        ret_sum_image.append((ret_image == elem).astype(np.uint8))
-    dst_image = np.array(ret_sum_image[0])
-    for elem2 in ret_sum_image[1:]:
-        dst_image = dst_image + elem2
-    return dst_image
+    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    for i, temp_slice in enumerate(label_image):
+        temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
+        temp_ret_image = temp_ret_image.astype(ret_image.dtype)
+        ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
+    return ret_image
 
 # image process
 def to_1RGB_image(src_images, color="R"):
