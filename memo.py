@@ -185,31 +185,14 @@ def get_images(idx):
     temp_ct_path, temp_nm_path, temp_lb_path = get_paths(idx)
     temp_ct_objs = open_CT(temp_ct_path)
     temp_nm_obj = open_NM(temp_nm_path)
+    temp_nm_image = temp_nm_obj.pixel_array
     temp_lb_image = open_LB(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
+    # to raw data
+    transform_vars = get_transform_var(temp_ct_objs, temp_nm_obj)
+    nm_start_index = transform_vars["First ID of NM"]
+    lb_start_index = transform_vars["First ID of CT"]
+    temp_skip_list = transform_vars["final result"]
     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-    temp_skip_list = get_transform_var(temp_ct_objs, temp_nm_obj)["final result"]
-    re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, re_nm_image, tr_temp_lb_image
-
-print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in idx_list:
-    raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
-    print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    color_ct_image = to_color_image(ct_image)
-    red_lb_image = to_red_image(lb_image)
-    out_fusion_image = fusion_images(color_ct_image, red_lb_image)
-    plt.imshow(out_fusion_image[570])
-    plt.show()
-
-cidx_list = [37, 39, 44, 55, 61, 74, 146, 164, 186, 206, 207, 233, 240, 246, 247, 254, 255]
-cidx_list = [f"{i:03d}" for i in cidx_list]
-
-for elem in cidx_list:
-    raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
-    shape0s = [np.shape(raw_ct_image)[0], np.shape(raw_lb_image)[0],
-               np.shape(ct_image)[0], np.shape(nm_image)[0], np.shape(lb_image)[0]]
-    all_equal = all(s == shape0s[0] for s in shape0s)
-    print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image),
-          np.shape(ct_image), np.shape(nm_image), np.shape(lb_image),
-          "OK!" if all_equal else "")
+    rn_tr_lb_image = realign_lb_image(temp_nm_image,tr_temp_lb_image, nm_start_index, lb_start_index, temp_skip_list)
+    return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, rn_tr_lb_image
