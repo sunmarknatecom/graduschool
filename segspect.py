@@ -195,7 +195,7 @@ def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, inser
         ret_lb_image = np.zeros_like(src_nm_image, dtype=np.int16)
         ret_insert_index = np.array(ret_insert_index, dtype=np.int16)
         realign_lb_index = ret_insert_index - nm_start_index
-        for ret_index, src_index in zip(ret_insert_index, realign_lb_imdex):
+        for ret_index, src_index in zip(ret_insert_index, realign_lb_index):
             ret_lb_image[ret_index]=lb_image[src_index]
         return ret_lb_image
     except:
