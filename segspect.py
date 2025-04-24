@@ -2,6 +2,7 @@ import os, pydicom, copy, dicom2nifti, shutil, cv2
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 
 idx_list = os.listdir(".\\data\\")
 
