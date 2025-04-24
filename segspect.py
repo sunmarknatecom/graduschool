@@ -338,6 +338,23 @@ def find_sig_index(arr):
 def find_sig_frame(arr):
     return [(np.sum(elem) !=0).astype(int) for elem in arr]
 
+def multi_view(src_images):
+    frames, height, width, channel = src_images.shape
+    init_frame = 0
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    img_display = ax.imshow(src_images[init_frame])
+    ax.set_title("CT Image")
+    ax.set_title(f'Frame {init_frame}')
+    ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
+    slider = Slider(ax_slider, 'Frame', 0, frames-1, valinit=init_frame, valstep=1)
+    def update(val):
+        frame = int(slider.val)
+        img_display.set_data(src_images[frame])
+        ax.set_title(f'Frame {frame}')
+        fig.canvas.draw_idle()
+    slider.on_changed(update)
+    plt.show()
 
 # def get_images(idx):
 #     '''
