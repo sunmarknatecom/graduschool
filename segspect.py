@@ -187,6 +187,7 @@ def realign_ct_image(ct_image, ct_skip_list):
 def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, insert_locations):
     try:
         src_nm_index = list(range(nm_start_index, nm_end_index+1))
+        lb_length_limit = len(lb_image)
         ret_insert_index = []
         for i, val in enumerate(src_nm_index):
             ret_insert_index.append(val)
@@ -195,6 +196,7 @@ def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, inser
         ret_lb_image = np.zeros_like(src_nm_image, dtype=np.int16)
         ret_insert_index = np.array(ret_insert_index, dtype=np.int16)
         realign_lb_index = ret_insert_index - nm_start_index
+        realign_lb_index = realign_lb_index[realign_lb_index < lb_length_limit]
         for ret_index, src_index in zip(ret_insert_index, realign_lb_index):
             ret_lb_image[ret_index]=lb_image[src_index]
         return ret_lb_image
