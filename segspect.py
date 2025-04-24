@@ -284,7 +284,6 @@ def transform_label(ct_slices, nm_file_obj, label_image):
         dst_image = dst_image + elem2
     return dst_image
 
-
 # image process
 def to_1RGB_image(src_images, color="R"):
     temp_image = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
