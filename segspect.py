@@ -3,6 +3,7 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+from skimage.color import label2rgb # pip install scikit-image
 
 idx_list = os.listdir(".\\data\\")
 
