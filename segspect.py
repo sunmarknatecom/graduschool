@@ -279,11 +279,23 @@ def transform_label(ct_slices, nm_file_obj, label_image):
 
 
 # image process
-def to_red_image(src_images):
+def to_1RGB_image(src_images, color="R"):
     temp_image = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
     temp_image = np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in temp_image],dtype=np.uint8)
-    temp_image[:,:,:,2]=0
-    temp_image[:,:,:,1]=0
+    try:
+        if color == "R":
+            temp_image[:,:,:,2]=0
+            temp_image[:,:,:,1]=0
+        elif color == "G":
+            temp_image[:,:,:,2]=0
+            temp_image[:,:,:,1]=0
+        elif color == "B":
+            temp_image[:,:,:,2]=0
+            temp_image[:,:,:,1]=0
+        else:
+            print("only select in 'R' or 'G' or 'B'")
+    except TypeError:
+        print("totaly error")
     return temp_image
 
 def to_color_image(src_images):
