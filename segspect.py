@@ -184,24 +184,22 @@ def realign_ct_image(ct_image, ct_skip_list):
     else:
         return ct_image
 
-def realign_lb_image(src_nm_image, lb_image, nm_start_index, lb_start_index, inserted_locations):
-    inserted_locations = set(inserted_locations)
-    nm_image = np.zeros_like(src_nm_image, dtype=np.int16)
-    nm_index = nm_start_index
-    lb_index = lb_start_index
-    prev_frame = None
-    while nm_index < nm_image.shape[0]:
-        if nm_index in inserted_locations and prev_frame is not None:
-            nm_image[nm_index] = prev_frame
-        else:
-            if lb_index >= lb_image.shape[0]:
-                print("label image처리가 완료되었습니다.")
-                break
-            nm_image[nm_index] = lb_image[lb_index]
-            prev_frame = lb_image[lb_index]
-            lb_index +=1
-        nm_index +=1
-    return nm_image
+def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, insert_locations):
+    try:
+        src_nm_index = list(range(nm_start_index, nm_end_index+1))
+        ret_insert_index = []
+        for i, val in enumerate(src_nm_index):
+            ret_insert_indext.append(val)
+            if val in insert_locations:
+                ret_insert_index.append(val)
+        ret_lb_image = np.zeros_like(src_nm_image, dtype=np.int16)
+        ret_insert_index = np.array(ret_insert_index, dtype=np.int16)
+        realign_lb_index = ret_insert_index - nm_start_index
+        for ret_index, src_index in zip(ret_insert_index, realign_lb_imdex):
+            ret_lb_image[ret_index]=lb_image[src_index]
+        return ret_lb_image
+    except:
+        print("Not same frame image size between nm and lb")
 
 def transform_ct_image(ct_slices, nm_file_obj):
     ct_frames = len(ct_slices)
