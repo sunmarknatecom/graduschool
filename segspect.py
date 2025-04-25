@@ -358,6 +358,30 @@ def multi_view(src_images, bone_id):
     slider.on_changed(update)
     plt.show()
 
+def merged_lb_image(single_lb_images):
+    merged_lb_image = np.zeros_like(single_lb_images[1])
+    color_table = {0: (), }
+    for key, value in single_lb_images.items():
+        merged_lb_image += value
+    return merged_lb_image
+
+def merged_view(src_images):
+    frames, height, width, channel = src_images.shape
+    init_frame = 0
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    img_display = ax.imshow(src_images[init_frame])
+    ax.set_title(f'NM Image')
+    ax.set_title(f'Frame {init_frame}')
+    ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
+    slider = Slider(ax_slider, 'Frame', 0, frames-1, valinit=init_frame, valstep=1)
+    def update(val):
+        frame = int(slider.val)
+        img_display.set_data(src_images[frame])
+        ax.set_title(f'Frame {frame}')
+        fig.canvas.draw_idle()
+    slider.on_changed(update)
+    plt.show()
 # def get_images(idx):
 #     '''
 #     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
