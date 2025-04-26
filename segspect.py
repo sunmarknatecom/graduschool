@@ -358,7 +358,13 @@ def multi_view(src_images, bone_id):
     slider.on_changed(update)
     plt.show()
 
-def merged_lb_image(single_lb_images):
+def merge_lb_image(single_lb_images):
+    single_lb_images = {}
+    raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
+    # single_lb_images.append(raw_1ch_lb_image)
+    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
+    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
+    single_lb_images[elem_bone] = raw_1ch_lb_image
     merged_lb_image = np.zeros_like(single_lb_images[1])
     color_table = {0: (), }
     for key, value in single_lb_images.items():
