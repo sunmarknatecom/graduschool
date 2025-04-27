@@ -3,6 +3,7 @@ import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+from matplotlib.colors import ListedColormap
 from skimage.color import label2rgb # pip install scikit-image
 
 idx_list = os.listdir(".\\data\\")
@@ -474,11 +475,16 @@ def multi_view(src_images, bone_id):
     plt.show()
 
 def merged_view(src_images):
-    frames, height, width, channel = src_images.shape
+    frames, height, width = src_images.shape
+    unique_labels = np.unique(src_images)
+    num_labels = len(unique_labels)
+    colors = plt.get_cmap('tab20', num_labels)
+    custom_colors = [(0, 0, 0, 1)] + [colors(i) for i in range(1, num_labels)]  # 0은 검은색
+    custom_cmap = ListedColormap(custom_colors)
     init_frame = 0
     fig, ax = plt.subplots()
     plt.subplots_adjust(bottom=0.25)
-    img_display = ax.imshow(src_images[init_frame])
+    img_display = ax.imshow(src_images[init_frame], cmap=custom_cmap)
     ax.set_title(f'NM Image')
     ax.set_title(f'Frame {init_frame}')
     ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
@@ -559,7 +565,7 @@ transform_vars = get_align_info(ct_objs, nm_obj)
 nm_start_index = transform_vars["Start ID of NM"]
 nm_end_index = transform_vars["End ID of NM"]
 lb_start_index = transform_vars["Start ID of CT"]
-temp_skip_list = transform_vars["final result"]
+temp_skip_list = transform_vars["nm_indices_to_exclude"]
 
 single_lb_images = {}
 for elem_bone in bones_index:
@@ -574,4 +580,27 @@ for i, (bone_id, image) in enumerate(single_lb_images.items()):
    temp_color_nm_image = 255- to_color_image(nm_image)
    out_image = fusion_images(temp_color_image, temp_color_nm_image)
    multi_view(out_image, bone_id)
-    
+
+
+multi_label_image = np.zeros_like(rn_tr_lb_image)
+for elem_bone in bones_index:
+    raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
+    # single_lb_images.append(raw_1ch_lb_image)
+    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
+    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
+    multi_label_image = multi_label_image + raw_1ch_lb_image * elem_bone
+
+import random
+
+color_bone_index = np.array([[i, i, i] for i in bones_index], dtype=np.uint8)
+color_bone_map = []
+for i in color_bone_index:
+    elem = np.array([0,0,0], dtype=np.uint8)
+    for j in range(3):
+        elem[j] = random.randint(128,255)
+    color_bone_map.append((i, elem))
+
+test_image = copy.copy(multi_label_image)
+color_image = to_color_image(test_image)
+for k, v in color_bone_map:
+    test_image[test_image == k] = v
