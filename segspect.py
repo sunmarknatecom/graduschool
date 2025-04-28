@@ -456,6 +456,9 @@ def merge_lb_image(single_lb_images):
 
 # visualization
 
+def coloring_label(multi_label_image):
+    return
+
 def multi_view(src_images, bone_id):
     frames, height, width, channel = src_images.shape
     init_frame = 0
