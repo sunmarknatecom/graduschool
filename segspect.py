@@ -84,25 +84,27 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     temp_out_image = np.flip(temp_out_image, axis=1)
     return temp_out_image
 
-def load_NM_image(nm_obj):
-    temp_array = nm_obj.pixel_array
+
+def load_NM_image(src_nm_obj):
+    temp_array = src_nm_obj.pixel_array
     try:
-        if nm_obj[0x0028,0x1052]:
-            rescale_intercept = nm_obj[0x0028,0x1052]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
-            rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+        if (0x0028, 0x1052) in src_nm_obj:
+            rescale_intercept = src_nm_obj[0x0028,0x1052].value
+        else:
+            rescale_intercept = src_nm_obj[0x0040,0x9096][0][0x0040,0x9224].value
     except:
         print("No metadata of Rescale Intercept")
     try:
-        if nm_obj[0x0028,0x1053]:
-            rescale_slope = nm_obj[0x0028,0x1053]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9225]:
-            rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
+        if (0x0028, 0x1053) in src_nm_obj:
+            rescale_slope = src_nm_obj[0x0028,0x1053].value
+        else:
+            rescale_slope = src_nm_obj[0x0040,0x9096][0][0x0040,0x9225].value
     except:
         print("No metadata of Rescale Slope")
-    rescale_intercept = float(rescale_intercept.value)
-    rescale_slope = float(rescale_slope.value)
+    rescale_intercept = float(rescale_intercept)
+    rescale_slope = float(rescale_slope)
     return np.array(temp_array * rescale_slope + rescale_intercept, dtype=np.int16)
+
 
 def convert_suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
