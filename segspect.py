@@ -606,5 +606,6 @@ for i in color_bone_index:
 
 test_image = copy.copy(multi_label_image)
 color_image = to_color_image(test_image)
-for k, v in color_bone_map:
-    test_image[test_image == k] = v
+for src_color, dst_color in color_bone_map.items():
+    mask = np.all(text_image == src_color, axis=-1)
+    test_image[mask] = dst_color
