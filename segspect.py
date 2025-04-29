@@ -655,9 +655,10 @@ def get_images(idx):
     realign_vars = get_align_info(temp_ct_objs, temp_nm_obj)
     nm_start_index = realign_vars["Start ID of NM"]
     lb_start_index = realign_vars["Start ID of CT"]
+    nm_end_index = transform_vars["End ID of NM"]
     temp_skip_list = realign_vars["nm_indices_to_exclude"]
     tr_temp_lb_image = merge_lb_image(temp_ct_objs, temp_nm_obj, temp_lb_image, bones_index)
-    rn_tr_lb_image = realign_lb_image(temp_nm_image,tr_temp_lb_image, nm_start_index, lb_start_index, temp_skip_list)
+    rn_tr_lb_image = realign_lb_image(temp_nm_image,tr_temp_lb_image, nm_start_index, nm_end_index , temp_skip_list)
     return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, temp_suv_nm_image, rn_tr_lb_image
 
 bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
