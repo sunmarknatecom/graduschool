@@ -86,7 +86,20 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
 
 def suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
-    rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+    try:
+        if nm_obj[0x0028,0x1052]:
+            rescale_intercept = nm_obj[0x0028,0x1052]
+        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+            rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+    except:
+        print("No metadata of Rescale Intercept")
+    try:
+        if nm_obj[0x0028,0x1053]:
+            rescale_slope = nm_obj[0x0028,0x1053]
+        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+            rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+    except:
+        print("No metadata of Rescale Slope")  
     rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
     injDose = nm_obj[0x0054,0x0016][0][0x0018,0x1074]
     time_acquisition = nm_obj[0x0008,0x0031]
