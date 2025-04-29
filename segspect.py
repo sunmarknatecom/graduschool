@@ -89,14 +89,14 @@ def suv_nm_image(nm_obj):
     try:
         if (0x0028,0x1052) in nm_obj:
             rescale_intercept = nm_obj[0x0028,0x1052]
-        elif:
+        else:
             rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
         print("No metadata of Rescale Intercept")
     try:
         if (0x0028,0x1053) in nm_obj:
             rescale_slope = nm_obj[0x0028,0x1053]
-        elif:
+        else:
             rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
         print("No metadata of Rescale Slope")  
