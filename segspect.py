@@ -596,13 +596,13 @@ for elem_bone in bones_index:
 
 import random
 
-color_bone_index = np.array([[i, i, i] for i in bones_index], dtype=np.uint8)
+color_bone_index = [(i, i, i) for i in bones_index]
 color_bone_map = []
 for i in color_bone_index:
-    elem = np.array([0,0,0], dtype=np.uint8)
+    elem = [0,0,0]
     for j in range(3):
         elem[j] = random.randint(128,255)
-    color_bone_map.append((i, elem))
+    color_bone_map.append((i, tuple(elem)))
 
 test_image = copy.copy(multi_label_image)
 color_image = to_color_image(test_image)
