@@ -586,7 +586,7 @@ for i, (bone_id, image) in enumerate(single_lb_images.items()):
    multi_view(out_image, bone_id)
 
 
-multi_label_image = np.zeros_like(rn_tr_lb_image)
+multi_label_image = np.zeros_like(lb_image)
 for elem_bone in bones_index:
     raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
     # single_lb_images.append(raw_1ch_lb_image)
