@@ -109,16 +109,16 @@ def load_NM_image(src_nm_obj):
 def convert_suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
     try:
-        if nm_obj[0x0028,0x1052]:
+        if (0x0028,0x1052) in nm_obj:
             rescale_intercept = nm_obj[0x0028,0x1052]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+        else:
             rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
         print("No metadata of Rescale Intercept")
     try:
-        if nm_obj[0x0028,0x1053]:
+        if (0x0028,0x1053) in nm_obj:
             rescale_slope = nm_obj[0x0028,0x1053]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+        else:
             rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
     except:
         print("No metadata of Rescale Slope")  
@@ -660,83 +660,3 @@ def get_images(idx):
 
 bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
 organs = {1 : "spleen", 2 : "kidney_right", 3 : "kidney_left", 4 : "gallbladder", 5 : "liver", 6 : "stomach", 7 : "pancreas", 8 : "adrenal_gland_right", 9 : "adrenal_gland_left", 10 : "lung_upper_lobe_left", 11 : "lung_lower_lobe_left", 12 : "lung_upper_lobe_right", 13 : "lung_middle_lobe_right", 14 : "lung_lower_lobe_right", 15 : "esophagus", 16 : "trachea", 17 : "thyroid_gland", 18 : "small_bowel", 19 : "duodenum", 20 : "colon", 21 : "urinary_bladder", 22 : "prostate", 23 : "kidney_cyst_left", 24 : "kidney_cyst_right", 25 : "sacrum", 26 : "vertebrae_S1", 27 : "vertebrae_L5", 28 : "vertebrae_L4", 29 : "vertebrae_L3", 30 : "vertebrae_L2", 31 : "vertebrae_L1", 32 : "vertebrae_T12", 33 : "vertebrae_T11", 34 : "vertebrae_T10", 35 : "vertebrae_T9", 36 : "vertebrae_T8", 37 : "vertebrae_T7", 38 : "vertebrae_T6", 39 : "vertebrae_T5", 40 : "vertebrae_T4", 41 : "vertebrae_T3", 42 : "vertebrae_T2", 43 : "vertebrae_T1", 44 : "vertebrae_C7", 45 : "vertebrae_C6", 46 : "vertebrae_C5", 47 : "vertebrae_C4", 48 : "vertebrae_C3", 49 : "vertebrae_C2", 50 : "vertebrae_C1", 51 : "heart", 52 : "aorta", 53 : "pulmonary_vein", 54 : "brachiocephalic_trunk", 55 : "subclavian_artery_right", 56 : "subclavian_artery_left", 57 : "common_carotid_artery_right", 58 : "common_carotid_artery_left", 59 : "brachiocephalic_vein_left", 60 : "brachiocephalic_vein_right", 61 : "atrial_appendage_left", 62 : "superior_vena_cava", 63 : "inferior_vena_cava", 64 : "portal_vein_and_splenic_vein", 65 : "iliac_artery_left", 66 : "iliac_artery_right", 67 : "iliac_vena_left", 68 : "iliac_vena_right", 69 : "humerus_left", 70 : "humerus_right", 71 : "scapula_left", 72 : "scapula_right", 73 : "clavicula_left", 74 : "clavicula_right", 75 : "femur_left", 76 : "femur_right", 77 : "hip_left", 78 : "hip_right", 79 : "spinal_cord", 80 : "gluteus_maximus_left", 81 : "gluteus_maximus_right", 82 : "gluteus_medius_left", 83 : "gluteus_medius_right", 84 : "gluteus_minimus_left", 85 : "gluteus_minimus_right", 86 : "autochthon_left", 87 : "autochthon_right", 88 : "iliopsoas_left", 89 : "iliopsoas_right", 90 : "brain", 91 : "skull", 92 : "rib_left_1", 93 : "rib_left_2", 94 : "rib_left_3", 95 : "rib_left_4", 96 : "rib_left_5", 97 : "rib_left_6", 98 : "rib_left_7", 99 : "rib_left_8", 100 : "rib_left_9", 101 : "rib_left_10", 102 : "rib_left_11", 103 : "rib_left_12", 104 : "rib_right_1", 105 : "rib_right_2", 106 : "rib_right_3", 107 : "rib_right_4", 108 : "rib_right_5", 109 : "rib_right_6", 110 : "rib_right_7", 111 : "rib_right_8", 112 : "rib_right_9", 113 : "rib_right_10", 114 : "rib_right_11", 115 : "rib_right_12", 116 : "sternum", 117 : "costal_cartilages"}
-
-print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
-for elem in idx_list:
-    raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(elem)
-    print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(ct_image), np.shape(nm_image), np.shape(lb_image))
-    # color_ct_image = to_color_image(ct_image)
-    # red_lb_image = to_red_image(lb_image)
-    # #
-    # red_nm_image = to_red_image(nm_image)
-    # out_fusion_image = fusion_images(color_ct_image, red_nm_image)
-    # plt.imshow(out_fusion_image[570])
-    # plt.show()
-    #
-    # plt.show(block=False)
-    # plt.pause(2)
-    # plt.close()
-
-for i, elem in enumerate(idx_list):
-    if i == 0:
-        print("CT,    LB,    TR_CT,   NM,    SUV_NM,    RN_TR_LB,   ELEM CHECK")
-    else:
-        raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), np.unique(raw_lb_image)==np.unique(rn_tr_lb_image))
-
-idx = "001"
-ct_path, nm_path, lb_path = get_file_paths(idx)
-ct_objs = open_CT_obj(ct_path)
-nm_obj = open_NM_obj(nm_path)
-nm_image = load_NM_image(nm_obj)
-raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(idx)
-transform_vars = get_align_info(ct_objs, nm_obj) 
-nm_start_index = transform_vars["Start ID of NM"]
-nm_end_index = transform_vars["End ID of NM"]
-lb_start_index = transform_vars["Start ID of CT"]
-temp_skip_list = transform_vars["nm_indices_to_exclude"]
-
-single_lb_images = {}
-for elem_bone in bones_index:
-    raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
-    # single_lb_images.append(raw_1ch_lb_image)
-    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
-    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
-    single_lb_images[elem_bone] = raw_1ch_lb_image
-
-for i, (bone_id, image) in enumerate(single_lb_images.items()):
-   temp_color_image = to_1RGB_image(image, color='G')
-   temp_color_nm_image = 255- to_color_image(nm_image)
-   out_image = fusion_images(temp_color_image, temp_color_nm_image)
-   multi_view(out_image, bone_id)
-
-
-multi_label_image = np.zeros_like(lb_image)
-for elem_bone in bones_index:
-    raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
-    # single_lb_images.append(raw_1ch_lb_image)
-    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
-    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
-    multi_label_image = multi_label_image + raw_1ch_lb_image * elem_bone
-
-import random
-
-color_bone_index = [(i, i, i) for i in bones_index]
-color_bone_map = {}
-for i in color_bone_index:
-    elem = [0,0,0]
-    for j in range(3):
-        elem[j] = random.randint(128,255)
-    color_bone_map[i] = tuple(elem)
-
-test_image = copy.copy(multi_label_image)
-color_image = to_color_image(test_image)
-for src_color, dst_color in color_bone_map.items():
-    mask = np.all(color_image == src_color, axis=-1)
-    color_image[mask] = dst_color
-
-for elem in nm_path_list:
-    first = elem.split("\\")[2]
-    second = open_NM_obj(elem)
-    second = suv_nm_image(second)
-    print(first, np.max(second))
