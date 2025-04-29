@@ -139,7 +139,7 @@ def convert_suv_nm_image(nm_obj):
     time_sec_injection = (time_injection//10000)*3600 + ((time_injection%10000)//100)*60 + time_injection%100
     time_interval = time_sec_acquisition - time_sec_injection
     coef = (bw*1000*2**(time_interval/time_halflife))/(injDose*1000000)
-    out_nm_image = nm_image * rescale_slope + rescale_intercept
+    out_nm_image = nm_obj.pixel_array * rescale_slope + rescale_intercept
     return out_nm_image * coef
 
 
