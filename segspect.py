@@ -682,7 +682,8 @@ for i, elem in enumerate(idx_list):
         print("CT,    LB,    TR_CT,   NM,    SUV_NM,    RN_TR_LB,   ELEM CHECK")
     else:
         raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), np.unique(raw_lb_image)==np.unique(rn_tr_lb_image))
+        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image))
+        print(elem, np.unique(rn_tr_lb_image))
 
 idx = "001"
 ct_path, nm_path, lb_path = get_file_paths(idx)
