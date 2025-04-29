@@ -60,6 +60,7 @@ def open_NM_obj(folder_path = ".//TEST_NM//"):
     Returns:
         A DICOM object of the first file in the folder.
     """
+
     return pydicom.dcmread(os.path.join(folder_path, os.listdir(folder_path)[0]))
 
 def load_CT_image(ct_objs):
@@ -84,6 +85,26 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     temp_out_image = np.flip(temp_out_image, axis=1)
     return temp_out_image
 
+def load_NM_image(nm_obj):
+    temp_array = pydicom.dcmread(nm_obj).pixel_array
+    try:
+        if nm_obj[0x0028,0x1052]:
+            rescale_intercept = nm_obj[0x0028,0x1052]
+        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+            rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+    except:
+        print("No metadata of Rescale Intercept")
+    try:
+        if nm_obj[0x0028,0x1053]:
+            rescale_slope = nm_obj[0x0028,0x1053]
+        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+            rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
+    except:
+        print("No metadata of Rescale Slope")
+    rescale_intercept = float(rescale_intercept.value)
+    rescale_slope = float(rescale_slope.value)
+    return np.array(temp_array * rescale_slope + rescale_intercept, dtype=np.int16)
+
 def suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
     try:
@@ -97,10 +118,9 @@ def suv_nm_image(nm_obj):
         if nm_obj[0x0028,0x1053]:
             rescale_slope = nm_obj[0x0028,0x1053]
         elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
-            rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+            rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
     except:
         print("No metadata of Rescale Slope")  
-    rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
     injDose = nm_obj[0x0054,0x0016][0][0x0018,0x1074]
     time_acquisition = nm_obj[0x0008,0x0031]
     time_halflife = nm_obj[0x0054,0x0016][0][0x0018,0x1075]
