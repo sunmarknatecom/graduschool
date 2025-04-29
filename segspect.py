@@ -99,8 +99,7 @@ def suv_nm_image(nm_obj):
         else:
             rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
-        print("No metadata of Rescale Slope")  
-    rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
+        print("No metadata of Rescale Slope")
     injDose = nm_obj[0x0054,0x0016][0][0x0018,0x1074]
     time_acquisition = nm_obj[0x0008,0x0031]
     time_halflife = nm_obj[0x0054,0x0016][0][0x0018,0x1075]
