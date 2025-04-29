@@ -84,6 +84,31 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     temp_out_image = np.flip(temp_out_image, axis=1)
     return temp_out_image
 
+def suv_nm_image(nm_obj):
+    bw = nm_obj[0x0010,0x1030]
+    rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
+    rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
+    injDose = nm_obj[0x0054,0x0016][0][0x0018,0x1074]
+    time_acquisition = nm_obj[0x0008,0x0031]
+    time_halflife = nm_obj[0x0054,0x0016][0][0x0018,0x1075]
+    time_injection = nm_obj[0x0054,0x0016][0][0x0018,0x1072]
+    # typpe correction
+    bw = float(bw.value)
+    rescale_intercept = float(rescale_intercept.value)
+    rescale_slope = float(rescale_slope.value)
+    injDose = float(injDose.value)
+    time_acquisition = float(time_acquisition.value)
+    time_halflife = float(time_halflife.value)
+    time_injection = float(time_injection.value)
+    # time calculation
+    time_sec_acquisition = (time_acquisition//10000)*3600 + ((time_acquisition%10000)//100)*60 + time_acquisition%100
+    time_sec_injection = (time_injection//10000)*3600 + ((time_injection%10000)//100)*60 + time_injection%100
+    time_interval = time_sec_acquisition - time_sec_injection
+    coef = (bw*1000*2**(time_interval/time_halflife))/(injDose*1000000)
+    out_nm_image = nm_image * rescale_slope + rescale_intercept
+    return out_nm_image * coef
+
+
 # image_processing
 
 def get_align_info(pm_ct_objs, pm_nm_obj):
