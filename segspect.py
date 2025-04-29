@@ -60,7 +60,6 @@ def open_NM_obj(folder_path = ".//TEST_NM//"):
     Returns:
         A DICOM object of the first file in the folder.
     """
-
     return pydicom.dcmread(os.path.join(folder_path, os.listdir(folder_path)[0]))
 
 def load_CT_image(ct_objs):
@@ -86,7 +85,7 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     return temp_out_image
 
 def load_NM_image(nm_obj):
-    temp_array = pydicom.dcmread(nm_obj).pixel_array
+    temp_array = nm_obj.pixel_array
     try:
         if nm_obj[0x0028,0x1052]:
             rescale_intercept = nm_obj[0x0028,0x1052]
@@ -97,7 +96,7 @@ def load_NM_image(nm_obj):
     try:
         if nm_obj[0x0028,0x1053]:
             rescale_slope = nm_obj[0x0028,0x1053]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+        elif nm_obj[0x0040,0x9096][0][0x0040,0x9225]:
             rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9225]
     except:
         print("No metadata of Rescale Slope")
@@ -105,7 +104,7 @@ def load_NM_image(nm_obj):
     rescale_slope = float(rescale_slope.value)
     return np.array(temp_array * rescale_slope + rescale_intercept, dtype=np.int16)
 
-def suv_nm_image(nm_obj):
+def convert_suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
     try:
         if nm_obj[0x0028,0x1052]:
@@ -645,7 +644,7 @@ def get_images(idx):
     temp_ct_objs = open_CT_obj(temp_ct_path)
     temp_nm_obj = open_NM_obj(temp_nm_path)
     temp_nm_image = load_NM_image(temp_nm_obj)
-    temp_suv_nm_image = suv_nm_image(temp_nm_obj)
+    temp_suv_nm_image = convert_suv_nm_image(temp_nm_obj)
     temp_lb_image = load_LB_image(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     # to raw data
@@ -676,12 +675,18 @@ for elem in idx_list:
     # plt.pause(2)
     # plt.close()
 
+for i, elem in enumerate(idx_list):
+    if i == 0:
+        print("CT,    LB,    TR_CT,   NM,    SUV_NM,    RN_TR_LB,   ELEM CHECK")
+    else:
+        raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
+        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), np.unique(raw_lb_image)==np.unique(rn_tr_lb_image))
 
-idx = "003"
+idx = "001"
 ct_path, nm_path, lb_path = get_file_paths(idx)
 ct_objs = open_CT_obj(ct_path)
 nm_obj = open_NM_obj(nm_path)
-nm_image = nm_obj.pixel_array
+nm_image = load_NM_image(nm_obj)
 raw_ct_image, raw_lb_image, ct_image, nm_image, lb_image = get_images(idx)
 transform_vars = get_align_info(ct_objs, nm_obj) 
 nm_start_index = transform_vars["Start ID of NM"]
