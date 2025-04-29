@@ -602,7 +602,7 @@ for i in color_bone_index:
     elem = [0,0,0]
     for j in range(3):
         elem[j] = random.randint(128,255)
-    color_bone_map[i] = tuple(elem)))
+    color_bone_map[i] = tuple(elem)
 
 test_image = copy.copy(multi_label_image)
 color_image = to_color_image(test_image)
