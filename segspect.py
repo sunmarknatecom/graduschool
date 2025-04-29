@@ -87,16 +87,16 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
 def suv_nm_image(nm_obj):
     bw = nm_obj[0x0010,0x1030]
     try:
-        if nm_obj[0x0028,0x1052]:
+        if (0x0028,0x1052) in nm_obj:
             rescale_intercept = nm_obj[0x0028,0x1052]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+        elif:
             rescale_intercept = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
         print("No metadata of Rescale Intercept")
     try:
-        if nm_obj[0x0028,0x1053]:
+        if (0x0028,0x1053) in nm_obj:
             rescale_slope = nm_obj[0x0028,0x1053]
-        elif nm_obj[0x0040,0x9096][0][0x0040,0x9224]:
+        elif:
             rescale_slope = nm_obj[0x0040,0x9096][0][0x0040,0x9224]
     except:
         print("No metadata of Rescale Slope")  
