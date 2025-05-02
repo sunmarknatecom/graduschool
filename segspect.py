@@ -563,7 +563,24 @@ def merge_lb_image(ct_objs, nm_obj, src_lb_image, bone_index):
 def coloring_label(multi_label_image):
     return
 
-def multi_view(src_images, bone_id):
+def single_channel_view(src_images, bone_id):
+    frames, height, width = src_images.shape
+    init_frame = 0
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    img_display = ax.imshow(src_images[init_frame])
+    ax.set_title(f'{organs[bone_id]} Frame {init_frame}')
+    ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
+    slider = Slider(ax_slider, 'Frame', 0, frames-1, valinit=init_frame, valstep=1)
+    def update(val):
+        frame = int(slider.val)
+        img_display.set_data(src_images[frame])
+        ax.set_title(f'{organs[bone_id]} Frame {frame}')
+        fig.canvas.draw_idle()
+    slider.on_changed(update)
+    plt.show()
+
+def multi_channel_view(src_images, bone_id):
     frames, height, width, channel = src_images.shape
     init_frame = 0
     fig, ax = plt.subplots()
@@ -639,7 +656,6 @@ def get_images(idx):
     ---------------------------------------------------------------------------
     Combination
     1 and 2 (future)
-    4 and 6 (present)
     5 and 6 (present)
     '''
     bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
@@ -668,16 +684,21 @@ print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 
 for i, elem in enumerate(idx_list):
     if i == 0:
-        print("CT,    LB,    TR_CT,   NM,    SUV_NM,    RN_TR_LB,   ELEM CHECK")
+        print("IDX  CT,             LB,             TR_CT,          NM,             SUV_NM,         RN_TR_LB,      ELEM CHECK")
         raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image))
-        print(elem, np.unique(rn_tr_lb_image))
+        basic_unique = np.unique(rn_tr_lb_image)
+        check_result = np.all(basic_unique == np.unique(rn_tr_lb_image))
+        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
     else:
         raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image))
-        print(elem, np.unique(rn_tr_lb_image))
+        try:
+            check_result = np.all(basic_unique == np.unique(rn_tr_lb_image))
+        except:
+            check_result = False
+        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
 
-idx = "001"
+
+idx = "025"
 ct_path, nm_path, lb_path = get_file_paths(idx)
 ct_objs = open_CT_obj(ct_path)
 nm_obj = open_NM_obj(nm_path)
@@ -688,21 +709,11 @@ nm_start_index = transform_vars["Start ID of NM"]
 nm_end_index = transform_vars["End ID of NM"]
 lb_start_index = transform_vars["Start ID of CT"]
 temp_skip_list = transform_vars["nm_indices_to_exclude"]
+temp_lb_image = copy.copy(lb_image)
+temp_lb_image[temp_lb_image > 0] = 1
+out_image = nm_image * temp_lb_image
 
-single_lb_images = {}
-for elem_bone in bones_index:
-    raw_1ch_lb_image = only_seg_lb_1ch_image(raw_lb_image, elem_bone)
-    # single_lb_images.append(raw_1ch_lb_image)
-    raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
-    raw_1ch_lb_image = realign_lb_image(nm_image, raw_1ch_lb_image, nm_start_index, nm_end_index, temp_skip_list)
-    single_lb_images[elem_bone] = raw_1ch_lb_image
-
-for i, (bone_id, image) in enumerate(single_lb_images.items()):
-   temp_color_image = to_1RGB_image(image, color='G')
-   temp_color_nm_image = 255- to_color_image(nm_image)
-   out_image = fusion_images(temp_color_image, temp_color_nm_image)
-   multi_view(out_image, bone_id)
-
+import pandas as pd
 
 color_bone_index = [(i, i, i) for i in bones_index]
 color_bone_map = {}
