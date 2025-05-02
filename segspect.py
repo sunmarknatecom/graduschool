@@ -1,4 +1,4 @@
-import os, pydicom, copy, dicom2nifti, shutil, cv2
+import os, pydicom, copy, cv2
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -40,6 +40,8 @@ def get_file_paths(idx, root_path = ".\\data\\"):
     #print(ct_path, nm_path)
     return ct_path, nm_path, lb_path
 
+
+
 def open_CT_obj(folder_path = ".//TEST_CT//"):
     """
     folder_path = path to the folder containing CT DICOM files
@@ -54,6 +56,8 @@ def open_CT_obj(folder_path = ".//TEST_CT//"):
         temp_objs.sort(key=lambda x: float(x.ImagePositionPatient[2]))
     return temp_objs
 
+
+
 def open_NM_obj(folder_path = ".//TEST_NM//"):
     """
     folder_path = path to the folder containing NM DICOM files
@@ -63,6 +67,8 @@ def open_NM_obj(folder_path = ".//TEST_NM//"):
     """
     return pydicom.dcmread(os.path.join(folder_path, os.listdir(folder_path)[0]))
 
+
+
 def load_CT_image(ct_objs):
     """
     ct_objs = list of CT DICOM objects
@@ -71,6 +77,8 @@ def load_CT_image(ct_objs):
         A numpy array of processed CT images.        
     """
     return np.array(np.array([elem.pixel_array for elem in ct_objs])*float(ct_objs[0].RescaleSlope)+float(ct_objs[0].RescaleIntercept),dtype=np.int16)
+
+
 
 def load_LB_image(folder_path = ".//TEST_LB//"):
     """
@@ -84,6 +92,7 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     temp_out_image = np.transpose(temp_image, (2, 1, 0))
     temp_out_image = np.flip(temp_out_image, axis=1)
     return temp_out_image
+
 
 
 def load_NM_image(src_nm_obj):
@@ -114,6 +123,8 @@ def load_NM_image(src_nm_obj):
         rescale_slope = 1.0
     scaled_image = src_nm_images * rescale_slope + rescale_intercept
     return scaled_image
+
+
 
 def convert_suv_nm_image(src_nm_obj):
     """
@@ -278,6 +289,8 @@ def get_align_info(pm_ct_objs, pm_nm_obj):
         "nm_indices_to_exclude": nm_indices_to_exclude
     }
 
+
+
 def realign_nm_image(nm_file_obj, nm_slices_to_remove):
     """
     nm_file_obj = NM file object
@@ -289,6 +302,8 @@ def realign_nm_image(nm_file_obj, nm_slices_to_remove):
     temp_nm_image = nm_file_obj.pixel_array
     ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
     return ret_image
+
+
 
 def realign_ct_image(ct_image, ct_skip_list):
     """
@@ -302,6 +317,8 @@ def realign_ct_image(ct_image, ct_skip_list):
         return np.delete(ct_image, ct_skip_list, axis=0)
     else:
         return ct_image
+
+
 
 def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, insert_locations):
     """
@@ -333,50 +350,57 @@ def realign_lb_image(src_nm_image, lb_image, nm_start_index, nm_end_index, inser
     except:
         print("Not same frame image size between nm and lb")
 
-def transform_ct_image(ct_slices, nm_file_obj):
+
+
+def transform_ct_image(src_ct_file_obj, src_nm_file_obj):
     """
-    ct_slices = list of CT DICOM objects
-    nm_file_obj = NM file object
+    src_ct_file_obj: list of CT DICOM objects
+    src_nm_file_obj: NM file object
+
     Function to transform CT images to match the NM image size and position.
+
     Returns:
         A tuple containing:
         - A numpy array of raw CT images
         - A numpy array of transformed CT images resized to match the NM image size.
     """
-    ct_frames = len(ct_slices)
-    ct_width, ct_height = ct_slices[0].pixel_array.shape
-    _, nm_width, nm_height = nm_file_obj.pixel_array.shape
-    ct_ps = float(ct_slices[0].PixelSpacing[0])
-    nm_ps = float(nm_file_obj.PixelSpacing[0])
-    # CT 위치
-    if "ImagePositionPatient" in ct_slices[0]:
-        ct_x0, ct_y0 = float(ct_slices[0].ImagePositionPatient[0]), float(ct_slices[0].ImagePositionPatient[1])
+    num_ct_slices = len(src_ct_file_obj)
+    ct_img_height, ct_img_width = src_ct_file_obj[0].pixel_array.shape
+    _, nm_img_height, nm_img_width = src_nm_file_obj.pixel_array.shape
+    ct_pixel_spacing = float(src_ct_file_obj[0].PixelSpacing[0])
+    nm_pixel_spacing = float(src_nm_file_obj.PixelSpacing[0])
+    # CT Image Position
+    if "ImagePositionPatient" in src_ct_file_obj[0]:
+        ct_pos_x, ct_pos_y = float(src_ct_file_obj[0].ImagePositionPatient[0]), float(src_ct_file_obj[0].ImagePositionPatient[1])
     else:
-        ct_x0, ct_y0 = float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
-    # NM 위치
-    if "ImagePositionPatient" in nm_file_obj:
-        nm_x0, nm_y0 = float(nm_file_obj.ImagePositionPatient[0]), float(nm_file_obj.ImagePositionPatient[1])
+        ct_pos_x, ct_pos_y = float(src_ct_file_obj[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_ct_file_obj[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    # NM Image Position
+    if "ImagePositionPatient" in src_nm_file_obj:
+        nm_pos_x, nm_pos_y = float(src_nm_file_obj.ImagePositionPatient[0]), float(src_nm_file_obj.ImagePositionPatient[1])
     else:
-        nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
-    #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
-    target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
-    start_x_a = max(0, -offset_x)
-    start_y_a = max(0, -offset_y)
-    end_x_a = min(target_shape_x, nm_width - offset_x)
-    end_y_a = min(target_shape_y, nm_height - offset_y)
-    start_x_b = max(0, offset_x)
-    start_y_b = max(0, offset_y)
-    end_x_b = start_x_b + (end_x_a - start_x_a)
-    end_y_b = start_y_b + (end_y_a - start_y_a)
-    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
-    out_raw_ct_image = []
-    for i, temp_slice in enumerate(ct_slices):
-        temp_image = temp_slice.pixel_array
-        out_raw_ct_image.append(temp_image)
-        temp_ret_image = cv2.resize(temp_image, (target_shape_x, target_shape_y))
-        ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
-    return np.array(out_raw_ct_image, dtype=np.int16), ret_image
+        nm_pos_x, nm_pos_y = float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    resized_ct_width = round(ct_img_width * ct_pixel_spacing / nm_pixel_spacing)
+    resized_ct_height = round(ct_img_height * ct_pixel_spacing / nm_pixel_spacing)
+    offset_x = round((ct_pos_x - nm_pos_x) / nm_pixel_spacing)
+    offset_y = round((ct_pos_y - nm_pos_y) / nm_pixel_spacing)
+    ct_start_x = max(0, -offset_x)
+    ct_start_y = max(0, -offset_y)
+    ct_end_x = min(resized_ct_width, nm_img_width - offset_x)
+    ct_end_y = min(resized_ct_height, nm_img_height - offset_y)
+    nm_start_x = max(0, offset_x)
+    nm_start_y = max(0, offset_y)
+    nm_end_x = nm_start_x + (ct_end_x - ct_start_x)
+    nm_end_y = nm_start_y + (ct_end_y - ct_start_y)
+    aligned_ct_volume = np.zeros((num_ct_slices, nm_img_width, nm_img_height), dtype=src_ct_file_obj[0].pixel_array.dtype)
+    raw_ct_volume = []
+    for idx, ct_slice in enumerate(src_ct_file_obj):
+        ct_image = ct_slice.pixel_array
+        raw_ct_volume.append(ct_image)
+        resized_ct_image = cv2.resize(ct_image, (resized_ct_width, resized_ct_height))
+        aligned_ct_volume[idx, nm_start_y:nm_end_y, nm_start_x:nm_end_x] = resized_ct_image[ct_start_y:ct_end_y, ct_start_x:ct_end_x]
+    return np.array(raw_ct_volume, dtype=np.int16), aligned_ct_volume
+
+
 
 def transform_label(ct_slices, nm_file_obj, label_image):
     """
@@ -423,6 +447,8 @@ def transform_label(ct_slices, nm_file_obj, label_image):
         ret_image[i, start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
     return ret_image
 
+
+
 # image process
 def to_1RGB_image(src_images, color="R"):
     """
@@ -450,6 +476,8 @@ def to_1RGB_image(src_images, color="R"):
         print("totally error")
     return temp_image
 
+
+
 def to_color_image(src_images):
     """
     src_images = list of images to be converted to RGB
@@ -461,17 +489,25 @@ def to_color_image(src_images):
     norm_images = np.array([cv2.normalize(elem, None, 0, 255, cv2.NORM_MINMAX) for elem in src_images],dtype=np.uint8)
     return np.array([cv2.cvtColor(elem, cv2.COLOR_GRAY2RGB) for elem in norm_images], dtype=np.uint8)
 
+
+
 # label manipulation
 
 def only_seg_lb_image(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)*seg_n
 
+
+
 def only_seg_lb_1ch_image(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)
+
+
 
 def find_min_max_index(src_lb_image, seg_n = 70):
     indices = np.argwhere(src_lb_image == seg_n)
     return np.min(indices[:,0]), np.max(indices[:,0])
+
+
 
 def fusion_images(src1, src2):
     if np.shape(src1) == np.shape(src2):
@@ -481,6 +517,8 @@ def fusion_images(src1, src2):
         return temp_out_image
     else:
          print("error not equal shape")       
+
+
 
 def find_sig_index(arr):
     ranges = []
@@ -497,8 +535,12 @@ def find_sig_index(arr):
         ranges.append((start, len(arr)))
     return ranges
 
+
+
 def find_sig_frame(arr):
     return [(np.sum(elem) !=0).astype(int) for elem in arr]
+
+
 
 def transform_single_label(ct_slices, nm_file_obj, single_label_image):
     """
@@ -543,42 +585,55 @@ def transform_single_label(ct_slices, nm_file_obj, single_label_image):
     ret_image[start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
     return ret_image
 
-def transform_multi_label_image(ct_objs, nm_obj, src_lb_image):
-    pass
 
-def merge_lb_image(ct_objs, nm_obj, src_lb_image, bone_index):
-    single_lb_images = {}
-    for elem in bone_index:
-        raw_1ch_lb_image = only_seg_lb_1ch_image(src_lb_image, elem)
-        # single_lb_images.append(raw_1ch_lb_image)
-        raw_1ch_lb_image = transform_label(ct_objs, nm_obj, raw_1ch_lb_image)
-        single_lb_images[elem] = raw_1ch_lb_image*elem
-    merged_lb_image = np.zeros_like(raw_1ch_lb_image)
-    for key, value in single_lb_images.items():
-        merged_lb_image += value
-    return merged_lb_image
+
+def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indices):
+    """
+    Merges multiple binary label maps (one for each bone index) into a single labeled image.
+    Args:
+        src_ct_file_obj: List of CT DICOM objects.
+        src_nm_file_obj: NM DICOM object.
+        original_label_image: 3D label image with all bone labels.
+        bone_indices: List of integer label values representing individual bones.
+    Returns:
+        A merged label image where each bone index occupies its respective region.
+    """
+    transformed_label_images = {}
+    for bone_label in bone_indices:
+        single_label_mask = only_seg_lb_1ch_image(raw_label_image, bone_label)
+        transformed_mask = transform_label(src_ct_file_obj, src_nm_file_obj, single_label_mask)
+        transformed_label_images[bone_label] = transformed_mask * bone_label
+    merged_label_image = np.zeros_like(transformed_mask)
+    for bone_label, label_image in transformed_label_images.items():
+        merged_label_image += label_image
+    return merged_label_image
+
 
 # visualization
 
 def coloring_label(multi_label_image):
     return
 
-def single_channel_view(src_images, bone_id):
+
+
+def single_channel_view(src_images):
     frames, height, width = src_images.shape
     init_frame = 0
     fig, ax = plt.subplots()
     plt.subplots_adjust(bottom=0.25)
     img_display = ax.imshow(src_images[init_frame])
-    ax.set_title(f'{organs[bone_id]} Frame {init_frame}')
+    ax.set_title(f'Frame {init_frame}')
     ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
     slider = Slider(ax_slider, 'Frame', 0, frames-1, valinit=init_frame, valstep=1)
     def update(val):
         frame = int(slider.val)
         img_display.set_data(src_images[frame])
-        ax.set_title(f'{organs[bone_id]} Frame {frame}')
+        ax.set_title(f'Frame {frame}')
         fig.canvas.draw_idle()
     slider.on_changed(update)
     plt.show()
+
+
 
 def multi_channel_view(src_images, bone_id):
     frames, height, width, channel = src_images.shape
@@ -597,6 +652,8 @@ def multi_channel_view(src_images, bone_id):
         fig.canvas.draw_idle()
     slider.on_changed(update)
     plt.show()
+
+
 
 def merged_view(src_images):
     frames, height, width = src_images.shape
@@ -620,26 +677,8 @@ def merged_view(src_images):
         fig.canvas.draw_idle()
     slider.on_changed(update)
     plt.show()
-# def get_images(idx):
-#     '''
-#     return : raw_ct_image(np), raw_lb_image(np), ct_image(np), nm_image(np), lb_image(np)
-#     '''
-#     temp_ct_path, temp_nm_path, temp_lb_path = get_file_paths(idx)
-#     temp_ct_objs = open_CT_obj(temp_ct_path)
-#     temp_nm_obj = open_NM_obj(temp_nm_path)
-#     temp_lb_image = load_LB_image(temp_lb_path)
-#     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
-#     # to raw data
-#     transform_vars = get_align_info(temp_ct_objs, temp_nm_obj)
-#     temp_skip_list = transform_vars["final result"]
-#     temp_ct_skip_list = transform_vars["delete CT index"]
-#     tr_temp_lb_image = transform_label(temp_ct_objs, temp_nm_obj, temp_lb_image)
-#     re_nm_image = realign_nm_image(temp_nm_obj, temp_skip_list)
-#     re_raw_ct_image = realign_ct_image(raw_temp_ct_image, temp_ct_skip_list)
-#     re_raw_lb_image = realign_ct_image(temp_lb_image, temp_ct_skip_list)
-#     re_tr_ct_image = realign_ct_image(tr_temp_ct_image, temp_ct_skip_list)
-#     re_tr_lb_image = realign_ct_image(tr_temp_lb_image, temp_ct_skip_list)
-#     return re_raw_ct_image, re_raw_lb_image, re_tr_ct_image, re_nm_image, re_tr_lb_image
+
+
 
 def get_images(idx):
     '''
@@ -715,16 +754,16 @@ out_image = nm_image * temp_lb_image
 
 import pandas as pd
 
-color_bone_index = [(i, i, i) for i in bones_index]
-color_bone_map = {}
-for i in color_bone_index:
-    elem = [0,0,0]
-    for j in range(3):
-        elem[j] = random.randint(128,255)
-    color_bone_map[i] = tuple(elem)
+# color_bone_index = [(i, i, i) for i in bones_index]
+# color_bone_map = {}
+# for i in color_bone_index:
+#     elem = [0,0,0]
+#     for j in range(3):
+#         elem[j] = random.randint(128,255)
+#     color_bone_map[i] = tuple(elem)
 
-test_image = copy.copy(multi_label_image)
-color_image = to_color_image(test_image)
-for src_color, dst_color in color_bone_map.items():
-    mask = np.all(color_image == src_color, axis=-1)
-    color_image[mask] = dst_color
+# test_image = copy.copy(multi_label_image)
+# color_image = to_color_image(test_image)
+# for src_color, dst_color in color_bone_map.items():
+#     mask = np.all(color_image == src_color, axis=-1)
+#     color_image[mask] = dst_color
