@@ -7,7 +7,12 @@ from matplotlib.colors import ListedColormap
 from skimage.color import label2rgb # pip install scikit-image
 import random
 
+# global variables
+
 idx_list = os.listdir(".\\data\\")
+
+bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
+organs = {1 : "spleen", 2 : "kidney_right", 3 : "kidney_left", 4 : "gallbladder", 5 : "liver", 6 : "stomach", 7 : "pancreas", 8 : "adrenal_gland_right", 9 : "adrenal_gland_left", 10 : "lung_upper_lobe_left", 11 : "lung_lower_lobe_left", 12 : "lung_upper_lobe_right", 13 : "lung_middle_lobe_right", 14 : "lung_lower_lobe_right", 15 : "esophagus", 16 : "trachea", 17 : "thyroid_gland", 18 : "small_bowel", 19 : "duodenum", 20 : "colon", 21 : "urinary_bladder", 22 : "prostate", 23 : "kidney_cyst_left", 24 : "kidney_cyst_right", 25 : "sacrum", 26 : "vertebrae_S1", 27 : "vertebrae_L5", 28 : "vertebrae_L4", 29 : "vertebrae_L3", 30 : "vertebrae_L2", 31 : "vertebrae_L1", 32 : "vertebrae_T12", 33 : "vertebrae_T11", 34 : "vertebrae_T10", 35 : "vertebrae_T9", 36 : "vertebrae_T8", 37 : "vertebrae_T7", 38 : "vertebrae_T6", 39 : "vertebrae_T5", 40 : "vertebrae_T4", 41 : "vertebrae_T3", 42 : "vertebrae_T2", 43 : "vertebrae_T1", 44 : "vertebrae_C7", 45 : "vertebrae_C6", 46 : "vertebrae_C5", 47 : "vertebrae_C4", 48 : "vertebrae_C3", 49 : "vertebrae_C2", 50 : "vertebrae_C1", 51 : "heart", 52 : "aorta", 53 : "pulmonary_vein", 54 : "brachiocephalic_trunk", 55 : "subclavian_artery_right", 56 : "subclavian_artery_left", 57 : "common_carotid_artery_right", 58 : "common_carotid_artery_left", 59 : "brachiocephalic_vein_left", 60 : "brachiocephalic_vein_right", 61 : "atrial_appendage_left", 62 : "superior_vena_cava", 63 : "inferior_vena_cava", 64 : "portal_vein_and_splenic_vein", 65 : "iliac_artery_left", 66 : "iliac_artery_right", 67 : "iliac_vena_left", 68 : "iliac_vena_right", 69 : "humerus_left", 70 : "humerus_right", 71 : "scapula_left", 72 : "scapula_right", 73 : "clavicula_left", 74 : "clavicula_right", 75 : "femur_left", 76 : "femur_right", 77 : "hip_left", 78 : "hip_right", 79 : "spinal_cord", 80 : "gluteus_maximus_left", 81 : "gluteus_maximus_right", 82 : "gluteus_medius_left", 83 : "gluteus_medius_right", 84 : "gluteus_minimus_left", 85 : "gluteus_minimus_right", 86 : "autochthon_left", 87 : "autochthon_right", 88 : "iliopsoas_left", 89 : "iliopsoas_right", 90 : "brain", 91 : "skull", 92 : "rib_left_1", 93 : "rib_left_2", 94 : "rib_left_3", 95 : "rib_left_4", 96 : "rib_left_5", 97 : "rib_left_6", 98 : "rib_left_7", 99 : "rib_left_8", 100 : "rib_left_9", 101 : "rib_left_10", 102 : "rib_left_11", 103 : "rib_left_12", 104 : "rib_right_1", 105 : "rib_right_2", 106 : "rib_right_3", 107 : "rib_right_4", 108 : "rib_right_5", 109 : "rib_right_6", 110 : "rib_right_7", 111 : "rib_right_8", 112 : "rib_right_9", 113 : "rib_right_10", 114 : "rib_right_11", 115 : "rib_right_12", 116 : "sternum", 117 : "costal_cartilages"}
 
 # file_util
 
@@ -69,14 +74,14 @@ def open_NM_obj(folder_path = ".//TEST_NM//"):
 
 
 
-def load_CT_image(ct_objs):
+def load_CT_image(src_ct_file_objs):
     """
     ct_objs = list of CT DICOM objects
     Function to load and process CT images from the given DICOM objects.
     Returns:
         A numpy array of processed CT images.        
     """
-    return np.array(np.array([elem.pixel_array for elem in ct_objs])*float(ct_objs[0].RescaleSlope)+float(ct_objs[0].RescaleIntercept),dtype=np.int16)
+    return np.array(np.array([elem.pixel_array for elem in src_ct_file_objs])*float(src_ct_file_objs[0].RescaleSlope)+float(src_ct_file_objs[0].RescaleIntercept),dtype=np.int16)
 
 
 
@@ -87,37 +92,37 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     Returns:
         A numpy array of processed label images.
     """
-    temp_obj = nib.load(folder_path)
-    temp_image = temp_obj.get_fdata()
-    temp_out_image = np.transpose(temp_image, (2, 1, 0))
-    temp_out_image = np.flip(temp_out_image, axis=1)
-    return temp_out_image
+    temp_lb_file_obj = nib.load(folder_path)
+    temp_lb_image = temp_lb_file_obj.get_fdata()
+    temp_out_lb_image = np.transpose(temp_lb_image, (2, 1, 0))
+    temp_out_lb_image = np.flip(temp_out_lb_image, axis=1)
+    return temp_out_lb_image
 
 
 
-def load_NM_image(src_nm_obj):
+def load_NM_image(src_nm_file_obj):
     """
     src_nm_obj = NM DICOM object
     Function to load and process NM images from the given DICOM object.
     Returns:
         A numpy array of processed NM images.    
     """
-    src_nm_images = src_nm_obj.pixel_array
+    src_nm_images = src_nm_file_obj.pixel_array
     # Rescale intercept
     try:
-        if (0x0028, 0x1052) in src_nm_obj:
-            rescale_intercept = float(src_nm_obj[0x0028, 0x1052].value)
+        if (0x0028, 0x1052) in src_nm_file_obj:
+            rescale_intercept = float(src_nm_file_obj[0x0028, 0x1052].value)
         else:
-            rescale_intercept = float(src_nm_obj[0x0040, 0x9096][0][0x0040, 0x9224].value)
+            rescale_intercept = float(src_nm_file_obj[0x0040, 0x9096][0][0x0040, 0x9224].value)
     except:
         print("No metadata for Rescale Intercept")
         rescale_intercept = 0.0
     # Rescale slope
     try:
-        if (0x0028, 0x1053) in src_nm_obj:
-            rescale_slope = float(src_nm_obj[0x0028, 0x1053].value)
+        if (0x0028, 0x1053) in src_nm_file_obj:
+            rescale_slope = float(src_nm_file_obj[0x0028, 0x1053].value)
         else:
-            rescale_slope = float(src_nm_obj[0x0040, 0x9096][0][0x0040, 0x9225].value)
+            rescale_slope = float(src_nm_file_obj[0x0040, 0x9096][0][0x0040, 0x9225].value)
     except:
         print("No metadata for Rescale Slope")
         rescale_slope = 1.0
@@ -126,20 +131,20 @@ def load_NM_image(src_nm_obj):
 
 
 
-def convert_suv_nm_image(src_nm_obj):
+def load_suv_nm_image(src_nm_file_obj):
     """
-    src_nm_obj : NM DICOM object
+    src_nm_file_obj : NM DICOM object
     Function to convert NM images to SUV (Standardized Uptake Value) format.
     
     Returns:
         A numpy array of processed NM images in SUV format.    
     """
-    scaled_image = load_NM_image(src_nm_obj)
-    body_weight_kg = float(src_nm_obj[0x0010, 0x1030].value)
-    injected_dose_bq = float(src_nm_obj[0x0054, 0x0016][0][0x0018, 0x1074].value)
-    acquisition_time = float(src_nm_obj[0x0008, 0x0031].value)
-    radiopharmaceutical_halflife_sec = float(src_nm_obj[0x0054, 0x0016][0][0x0018, 0x1075].value)
-    injection_time = float(src_nm_obj[0x0054, 0x0016][0][0x0018, 0x1072].value)
+    scaled_image = load_NM_image(src_nm_file_obj)
+    body_weight_kg = float(src_nm_file_obj[0x0010, 0x1030].value)
+    injected_dose_bq = float(src_nm_file_obj[0x0054, 0x0016][0][0x0018, 0x1074].value)
+    acquisition_time = float(src_nm_file_obj[0x0008, 0x0031].value)
+    radiopharmaceutical_halflife_sec = float(src_nm_file_obj[0x0054, 0x0016][0][0x0018, 0x1075].value)
+    injection_time = float(src_nm_file_obj[0x0054, 0x0016][0][0x0018, 0x1072].value)
     # Convert HHMMSS float time to seconds since midnight
     def time_to_seconds(time_val):
         hours = int(time_val // 10000)
@@ -156,10 +161,10 @@ def convert_suv_nm_image(src_nm_obj):
 
 # image_processing
 
-def get_align_info(pm_ct_objs, pm_nm_obj):
+def get_align_info(src_ct_file_objs, src_nm_file_obj):
     """
-    pm_ct_objs = objects list of CT
-    pm_nm_obj = an object of NM
+    src_ct_file_objs = objects list of CT
+    src_nm_file_obj = an object of NM
     Function to align CT and NM slices based on their slice locations.
     Returns:
         {
@@ -176,19 +181,19 @@ def get_align_info(pm_ct_objs, pm_nm_obj):
         }
     """
     # CT 데이터 처리
-    img_shape_ct = list(pm_ct_objs[0].pixel_array.shape)
-    img_shape_ct.append(len(pm_ct_objs))
+    img_shape_ct = list(src_ct_file_objs[0].pixel_array.shape)
+    img_shape_ct.append(len(src_ct_file_objs))
     slice_locations_ct = {}
-    for i, slice in enumerate(pm_ct_objs):
+    for i, slice in enumerate(src_ct_file_objs):
         slice_locations_ct[i] = float(slice.SliceLocation)
     # NM 데이터 처리
-    if "ImagePositionPatient" in pm_nm_obj:
-        start_position_nm = float(pm_nm_obj["ImagePositionPatient"].value[2])  # 위치 정보
+    if "ImagePositionPatient" in src_nm_file_obj:
+        start_position_nm = float(src_nm_file_obj["ImagePositionPatient"].value[2])  # 위치 정보
     else:
-        start_position_nm = float(pm_nm_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[2])
+        start_position_nm = float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[2])
     slice_locations_nm = {}
-    slice_thickness_nm = float(pm_nm_obj.SliceThickness)
-    slices_num_nm = pm_nm_obj.NumberOfFrames
+    slice_thickness_nm = float(src_nm_file_obj.SliceThickness)
+    slices_num_nm = src_nm_file_obj.NumberOfFrames
     for i in range(slices_num_nm):
         slice_locations_nm[i] = float(start_position_nm + i * slice_thickness_nm)
     # CT-NM 정렬 지점 찾기 (NM, CT 시작 인덱스 구하기)
@@ -266,7 +271,7 @@ def get_align_info(pm_ct_objs, pm_nm_obj):
     #  slices_num_nm가 ref1에서 -1이 되어 다시 1을 더하여 복원
     nm_indices_to_exclude = np.concatenate((np.arange(start_index_nm),np.array(unmatched_nm_indices), np.arange(end_index_nm+1,slices_num_nm+1)))
     nm_indices_to_exclude = np.array(nm_indices_to_exclude, dtype=np.int32)
-    filtered_nm_images = np.delete(pm_nm_obj.pixel_array, nm_indices_to_exclude, axis=0)
+    filtered_nm_images = np.delete(src_nm_file_obj.pixel_array, nm_indices_to_exclude, axis=0)
     if start_index_ct != 0:
         ct_head_indices_to_exclude = np.arange(0, start_index_ct, dtype=np.int32)
     else:
@@ -291,20 +296,6 @@ def get_align_info(pm_ct_objs, pm_nm_obj):
 
 
 
-def realign_nm_image(nm_file_obj, nm_slices_to_remove):
-    """
-    nm_file_obj = NM file object
-    nm_slices_to_remove = list of slices to remove from NM image
-    Function to realign NM image by removing specified slices.
-    Returns:
-        Realigned NM image as a numpy array.
-    """
-    temp_nm_image = nm_file_obj.pixel_array
-    ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
-    return ret_image
-
-
-
 def realign_ct_image(ct_image, ct_skip_list):
     """
     ct_image = CT image as a numpy array
@@ -317,6 +308,20 @@ def realign_ct_image(ct_image, ct_skip_list):
         return np.delete(ct_image, ct_skip_list, axis=0)
     else:
         return ct_image
+
+
+
+def realign_nm_image(src_nm_file_obj, nm_slices_to_remove):
+    """
+    src_nm_file_obj = NM file object
+    nm_slices_to_remove = list of slices to remove from NM image
+    Function to realign NM image by removing specified slices.
+    Returns:
+        Realigned NM image as a numpy array.
+    """
+    temp_nm_image = src_nm_file_obj.pixel_array
+    ret_image = np.delete(temp_nm_image, nm_slices_to_remove, axis=0)    
+    return ret_image
 
 
 
@@ -402,31 +407,30 @@ def transform_ct_image(src_ct_file_obj, src_nm_file_obj):
 
 
 
-def transform_label(ct_slices, nm_file_obj, label_image):
+def transform_single_label(src_ct_file_objs, src_nm_file_obj, single_label_image):
     """
-    ct_slices = list of CT DICOM objects
-    nm_file_obj = NM file object
+    src_ct_file_objs = list of CT DICOM objects
+    src_nm_file_obj = NM file object
     label_image = label image as a numpy array
     Function to transform label images to match the NM image size and position.
     Returns:
         A numpy array of transformed label images resized to match the NM image size.
     """
-    ct_frames = len(ct_slices)
-    ct_width, ct_height = ct_slices[0].pixel_array.shape
-    _, nm_width, nm_height = nm_file_obj.pixel_array.shape
-    ct_ps = float(ct_slices[0].PixelSpacing[0])
-    nm_ps = float(nm_file_obj.PixelSpacing[0])
+    ct_width, ct_height = src_ct_file_objs[0].pixel_array.shape
+    _, nm_width, nm_height = src_nm_file_obj.pixel_array.shape
+    ct_ps = float(src_ct_file_objs[0].PixelSpacing[0])
+    nm_ps = float(src_nm_file_obj.PixelSpacing[0])
     # CT 위치
-    if "ImagePositionPatient" in ct_slices[0]:
-        ct_x0, ct_y0 = float(ct_slices[0].ImagePositionPatient[0]), float(ct_slices[0].ImagePositionPatient[1])
+    if "ImagePositionPatient" in src_ct_file_objs[0]:
+        ct_x0, ct_y0 = float(src_ct_file_objs[0].ImagePositionPatient[0]), float(src_ct_file_objs[0].ImagePositionPatient[1])
     else:
-        ct_x0, ct_y0 = float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+        ct_x0, ct_y0 = float(src_ct_file_objs[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_ct_file_objs[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
     # NM 위치
-    if "ImagePositionPatient" in nm_file_obj:
-        nm_x0, nm_y0 = float(nm_file_obj.ImagePositionPatient[0]), float(nm_file_obj.ImagePositionPatient[1])
+    if "ImagePositionPatient" in src_nm_file_obj:
+        nm_x0, nm_y0 = float(src_nm_file_obj.ImagePositionPatient[0]), float(src_nm_file_obj.ImagePositionPatient[1])
     else:
-        nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
-    #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
+        nm_x0, nm_y0 = float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    #nm_x0, nm_y0 = src_nm_file_obj.ImagePositionPatient[0], src_nm_file_obj.ImagePositionPatient[1]
     target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
     offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
     # point들 정리
@@ -440,7 +444,51 @@ def transform_label(ct_slices, nm_file_obj, label_image):
     end_x_b = start_x_b + (end_x_a - start_x_a)
     end_y_b = start_y_b + (end_y_a - start_y_a)
     # 결과 이미지 초기화
-    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=ct_slices[0].pixel_array.dtype)
+    ret_image = np.zeros_like(src_nm_file_obj.pixel_array[0])
+    temp_ret_image = cv2.resize(single_label_image, (target_shape_x, target_shape_y))
+    temp_ret_image = temp_ret_image.astype(single_label_image.dtype)
+    ret_image[start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
+    return ret_image
+
+def transform_label(src_ct_file_objs, src_nm_file_obj, label_image):
+    """
+    src_ct_file_objs = list of CT DICOM objects
+    src_nm_file_obj = NM file object
+    label_image = label image as a numpy array
+    Function to transform label images to match the NM image size and position.
+    Returns:
+        A numpy array of transformed label images resized to match the NM image size.
+    """
+    ct_frames = len(src_ct_file_objs)
+    ct_width, ct_height = src_ct_file_objs[0].pixel_array.shape
+    _, nm_width, nm_height = src_nm_file_obj.pixel_array.shape
+    ct_ps = float(src_ct_file_objs[0].PixelSpacing[0])
+    nm_ps = float(src_nm_file_obj.PixelSpacing[0])
+    # CT 위치
+    if "ImagePositionPatient" in src_ct_file_objs[0]:
+        ct_x0, ct_y0 = float(src_ct_file_objs[0].ImagePositionPatient[0]), float(src_ct_file_objs[0].ImagePositionPatient[1])
+    else:
+        ct_x0, ct_y0 = float(src_ct_file_objs[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_ct_file_objs[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    # NM 위치
+    if "ImagePositionPatient" in src_nm_file_obj:
+        nm_x0, nm_y0 = float(src_nm_file_obj.ImagePositionPatient[0]), float(src_nm_file_obj.ImagePositionPatient[1])
+    else:
+        nm_x0, nm_y0 = float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(src_nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
+    #nm_x0, nm_y0 = src_nm_file_obj.ImagePositionPatient[0], src_nm_file_obj.ImagePositionPatient[1]
+    target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
+    offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
+    # point들 정리
+    # a를 변환전 배열, b를 변환 후 배열
+    start_x_a = max(0, -offset_x)
+    start_y_a = max(0, -offset_y)
+    end_x_a = min(target_shape_x, nm_width - offset_x)
+    end_y_a = min(target_shape_y, nm_height - offset_y)
+    start_x_b = max(0, offset_x)
+    start_y_b = max(0, offset_y)
+    end_x_b = start_x_b + (end_x_a - start_x_a)
+    end_y_b = start_y_b + (end_y_a - start_y_a)
+    # 결과 이미지 초기화
+    ret_image = np.zeros((ct_frames, nm_width, nm_height), dtype=src_ct_file_objs[0].pixel_array.dtype)
     for i, temp_slice in enumerate(label_image):
         temp_ret_image = cv2.resize(temp_slice, (target_shape_x, target_shape_y))
         temp_ret_image = temp_ret_image.astype(ret_image.dtype)
@@ -450,7 +498,7 @@ def transform_label(ct_slices, nm_file_obj, label_image):
 
 
 # image process
-def to_1RGB_image(src_images, color="R"):
+def cvt_mono_image(src_images, color="R"):
     """
     src_images = list of images to be converted to RGB
     color = color channel to be kept (R, G, or B)
@@ -478,7 +526,7 @@ def to_1RGB_image(src_images, color="R"):
 
 
 
-def to_color_image(src_images):
+def cvt_color_image(src_images):
     """
     src_images = list of images to be converted to RGB
     Function to convert grayscale images to RGB format.
@@ -493,12 +541,12 @@ def to_color_image(src_images):
 
 # label manipulation
 
-def only_seg_lb_image(src_lb_image, seg_n = 70):
+def extract_raw_mask_label(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)*seg_n
 
 
 
-def only_seg_lb_1ch_image(src_lb_image, seg_n = 70):
+def extract_binary_mask_label(src_lb_image, seg_n = 70):
     return (src_lb_image == seg_n).astype(np.uint8)
 
 
@@ -509,10 +557,10 @@ def find_min_max_index(src_lb_image, seg_n = 70):
 
 
 
-def fusion_images(src1, src2):
-    if np.shape(src1) == np.shape(src2):
-        temp_out_image = np.zeros_like(src1)
-        for i, (temp_1_image, temp_2_image) in enumerate(zip(src1, src2)):
+def blend_images(src1_image, src2_image):
+    if np.shape(src1_image) == np.shape(src2_image):
+        temp_out_image = np.zeros_like(src1_image)
+        for i, (temp_1_image, temp_2_image) in enumerate(zip(src1_image, src2_image)):
             temp_out_image[i] = cv2.addWeighted(temp_1_image, 0.5, temp_2_image, 0.5, 0)
         return temp_out_image
     else:
@@ -542,51 +590,6 @@ def find_sig_frame(arr):
 
 
 
-def transform_single_label(ct_slices, nm_file_obj, single_label_image):
-    """
-    ct_slices = list of CT DICOM objects
-    nm_file_obj = NM file object
-    label_image = label image as a numpy array
-    Function to transform label images to match the NM image size and position.
-    Returns:
-        A numpy array of transformed label images resized to match the NM image size.
-    """
-    ct_width, ct_height = ct_slices[0].pixel_array.shape
-    _, nm_width, nm_height = nm_file_obj.pixel_array.shape
-    ct_ps = float(ct_slices[0].PixelSpacing[0])
-    nm_ps = float(nm_file_obj.PixelSpacing[0])
-    # CT 위치
-    if "ImagePositionPatient" in ct_slices[0]:
-        ct_x0, ct_y0 = float(ct_slices[0].ImagePositionPatient[0]), float(ct_slices[0].ImagePositionPatient[1])
-    else:
-        ct_x0, ct_y0 = float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(ct_slices[0]["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
-    # NM 위치
-    if "ImagePositionPatient" in nm_file_obj:
-        nm_x0, nm_y0 = float(nm_file_obj.ImagePositionPatient[0]), float(nm_file_obj.ImagePositionPatient[1])
-    else:
-        nm_x0, nm_y0 = float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[0]), float(nm_file_obj["DetectorInformationSequence"][0]["ImagePositionPatient"].value[1])
-    #nm_x0, nm_y0 = nm_file_obj.ImagePositionPatient[0], nm_file_obj.ImagePositionPatient[1]
-    target_shape_x, target_shape_y = round(ct_width * ct_ps / nm_ps), round(ct_height * ct_ps / nm_ps)
-    offset_x, offset_y = round((ct_x0-nm_x0)/nm_ps), round((ct_y0-nm_y0)/nm_ps)
-    # point들 정리
-    # a를 변환전 배열, b를 변환 후 배열
-    start_x_a = max(0, -offset_x)
-    start_y_a = max(0, -offset_y)
-    end_x_a = min(target_shape_x, nm_width - offset_x)
-    end_y_a = min(target_shape_y, nm_height - offset_y)
-    start_x_b = max(0, offset_x)
-    start_y_b = max(0, offset_y)
-    end_x_b = start_x_b + (end_x_a - start_x_a)
-    end_y_b = start_y_b + (end_y_a - start_y_a)
-    # 결과 이미지 초기화
-    ret_image = np.zeros_like(nm_file_obj.pixel_array[0])
-    temp_ret_image = cv2.resize(single_label_image, (target_shape_x, target_shape_y))
-    temp_ret_image = temp_ret_image.astype(single_label_image.dtype)
-    ret_image[start_y_b:end_y_b, start_x_b:end_x_b] = temp_ret_image[start_y_a:end_y_a, start_x_a:end_x_a]
-    return ret_image
-
-
-
 def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indices):
     """
     Merges multiple binary label maps (one for each bone index) into a single labeled image.
@@ -600,7 +603,7 @@ def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indic
     """
     transformed_label_images = {}
     for bone_label in bone_indices:
-        single_label_mask = only_seg_lb_1ch_image(raw_label_image, bone_label)
+        single_label_mask = extract_binary_mask_label(raw_label_image, bone_label)
         transformed_mask = transform_label(src_ct_file_obj, src_nm_file_obj, single_label_mask)
         transformed_label_images[bone_label] = transformed_mask * bone_label
     merged_label_image = np.zeros_like(transformed_mask)
@@ -703,7 +706,7 @@ def get_images(idx):
     temp_ct_objs = open_CT_obj(temp_ct_path)
     temp_nm_obj = open_NM_obj(temp_nm_path)
     temp_nm_image = load_NM_image(temp_nm_obj)
-    temp_suv_nm_image = convert_suv_nm_image(temp_nm_obj)
+    temp_suv_nm_image = load_suv_nm_image(temp_nm_obj)
     temp_lb_image = load_LB_image(temp_lb_path)
     raw_temp_ct_image, tr_temp_ct_image = transform_ct_image(temp_ct_objs, temp_nm_obj)
     # to raw data
@@ -716,54 +719,38 @@ def get_images(idx):
     rn_tr_lb_image = realign_lb_image(temp_nm_image,tr_temp_lb_image, nm_start_index, nm_end_index , temp_skip_list)
     return raw_temp_ct_image, temp_lb_image, tr_temp_ct_image, temp_nm_image, temp_suv_nm_image, rn_tr_lb_image
 
-bones_index = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]
-organs = {1 : "spleen", 2 : "kidney_right", 3 : "kidney_left", 4 : "gallbladder", 5 : "liver", 6 : "stomach", 7 : "pancreas", 8 : "adrenal_gland_right", 9 : "adrenal_gland_left", 10 : "lung_upper_lobe_left", 11 : "lung_lower_lobe_left", 12 : "lung_upper_lobe_right", 13 : "lung_middle_lobe_right", 14 : "lung_lower_lobe_right", 15 : "esophagus", 16 : "trachea", 17 : "thyroid_gland", 18 : "small_bowel", 19 : "duodenum", 20 : "colon", 21 : "urinary_bladder", 22 : "prostate", 23 : "kidney_cyst_left", 24 : "kidney_cyst_right", 25 : "sacrum", 26 : "vertebrae_S1", 27 : "vertebrae_L5", 28 : "vertebrae_L4", 29 : "vertebrae_L3", 30 : "vertebrae_L2", 31 : "vertebrae_L1", 32 : "vertebrae_T12", 33 : "vertebrae_T11", 34 : "vertebrae_T10", 35 : "vertebrae_T9", 36 : "vertebrae_T8", 37 : "vertebrae_T7", 38 : "vertebrae_T6", 39 : "vertebrae_T5", 40 : "vertebrae_T4", 41 : "vertebrae_T3", 42 : "vertebrae_T2", 43 : "vertebrae_T1", 44 : "vertebrae_C7", 45 : "vertebrae_C6", 46 : "vertebrae_C5", 47 : "vertebrae_C4", 48 : "vertebrae_C3", 49 : "vertebrae_C2", 50 : "vertebrae_C1", 51 : "heart", 52 : "aorta", 53 : "pulmonary_vein", 54 : "brachiocephalic_trunk", 55 : "subclavian_artery_right", 56 : "subclavian_artery_left", 57 : "common_carotid_artery_right", 58 : "common_carotid_artery_left", 59 : "brachiocephalic_vein_left", 60 : "brachiocephalic_vein_right", 61 : "atrial_appendage_left", 62 : "superior_vena_cava", 63 : "inferior_vena_cava", 64 : "portal_vein_and_splenic_vein", 65 : "iliac_artery_left", 66 : "iliac_artery_right", 67 : "iliac_vena_left", 68 : "iliac_vena_right", 69 : "humerus_left", 70 : "humerus_right", 71 : "scapula_left", 72 : "scapula_right", 73 : "clavicula_left", 74 : "clavicula_right", 75 : "femur_left", 76 : "femur_right", 77 : "hip_left", 78 : "hip_right", 79 : "spinal_cord", 80 : "gluteus_maximus_left", 81 : "gluteus_maximus_right", 82 : "gluteus_medius_left", 83 : "gluteus_medius_right", 84 : "gluteus_minimus_left", 85 : "gluteus_minimus_right", 86 : "autochthon_left", 87 : "autochthon_right", 88 : "iliopsoas_left", 89 : "iliopsoas_right", 90 : "brain", 91 : "skull", 92 : "rib_left_1", 93 : "rib_left_2", 94 : "rib_left_3", 95 : "rib_left_4", 96 : "rib_left_5", 97 : "rib_left_6", 98 : "rib_left_7", 99 : "rib_left_8", 100 : "rib_left_9", 101 : "rib_left_10", 102 : "rib_left_11", 103 : "rib_left_12", 104 : "rib_right_1", 105 : "rib_right_2", 106 : "rib_right_3", 107 : "rib_right_4", 108 : "rib_right_5", 109 : "rib_right_6", 110 : "rib_right_7", 111 : "rib_right_8", 112 : "rib_right_9", 113 : "rib_right_10", 114 : "rib_right_11", 115 : "rib_right_12", 116 : "sternum", 117 : "costal_cartilages"}
 
-print("IDX", "raw_ct_image", "raw_lb_image", "ct_image", "nm_image", "lb_image")
 
-for i, elem in enumerate(idx_list):
-    if i == 0:
-        print("IDX  CT,             LB,             TR_CT,          NM,             SUV_NM,         RN_TR_LB,      ELEM CHECK")
-        raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        basic_unique = np.unique(rn_tr_lb_image)
-        check_result = np.all(basic_unique == np.unique(rn_tr_lb_image))
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
-    else:
-        raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
-        try:
+def check_index():
+    idx_list = os.listdir(".\\data\\")
+    for i, elem in enumerate(idx_list):
+        if i == 0:
+            print("IDX  CT,             LB,             TR_CT,          NM,             SUV_NM,         RN_TR_LB,      ELEM CHECK")
+            raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
+            basic_unique = np.unique(rn_tr_lb_image)
             check_result = np.all(basic_unique == np.unique(rn_tr_lb_image))
-        except:
-            check_result = False
-        print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
+            print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
+        else:
+            raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
+            try:
+                check_result = np.all(basic_unique == np.unique(rn_tr_lb_image))
+            except:
+                check_result = False
+            print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
 
 
-idx = "025"
-ct_path, nm_path, lb_path = get_file_paths(idx)
-ct_objs = open_CT_obj(ct_path)
-nm_obj = open_NM_obj(nm_path)
-nm_image = load_NM_image(nm_obj)
-raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = get_images(idx)
-transform_vars = get_align_info(ct_objs, nm_obj) 
-nm_start_index = transform_vars["Start ID of NM"]
-nm_end_index = transform_vars["End ID of NM"]
-lb_start_index = transform_vars["Start ID of CT"]
-temp_skip_list = transform_vars["nm_indices_to_exclude"]
-temp_lb_image = copy.copy(lb_image)
-temp_lb_image[temp_lb_image > 0] = 1
-out_image = nm_image * temp_lb_image
-
-import pandas as pd
-
-# color_bone_index = [(i, i, i) for i in bones_index]
-# color_bone_map = {}
-# for i in color_bone_index:
-#     elem = [0,0,0]
-#     for j in range(3):
-#         elem[j] = random.randint(128,255)
-#     color_bone_map[i] = tuple(elem)
-
-# test_image = copy.copy(multi_label_image)
-# color_image = to_color_image(test_image)
-# for src_color, dst_color in color_bone_map.items():
-#     mask = np.all(color_image == src_color, axis=-1)
-#     color_image[mask] = dst_color
+if __name__ == "__main__":
+    idx = "025"
+    ct_path, nm_path, lb_path = get_file_paths(idx)
+    ct_objs = open_CT_obj(ct_path)
+    nm_obj = open_NM_obj(nm_path)
+    nm_image = load_NM_image(nm_obj)
+    raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = get_images(idx)
+    transform_vars = get_align_info(ct_objs, nm_obj) 
+    nm_start_index = transform_vars["Start ID of NM"]
+    nm_end_index = transform_vars["End ID of NM"]
+    lb_start_index = transform_vars["Start ID of CT"]
+    temp_skip_list = transform_vars["nm_indices_to_exclude"]
+    temp_lb_image = copy.copy(lb_image)
+    temp_lb_image[temp_lb_image > 0] = 1
+    out_image = nm_image * temp_lb_image
