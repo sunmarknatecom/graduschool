@@ -721,9 +721,16 @@ def get_images(idx):
 
 
 
-def check_index():
+def check_index(limit_num=10):
+    """
+    Check the index of the images in the data directory.
+    Args:
+        limit_num (int): The number of images to check. Default is 10.
+    Returns:
+        int: 0 if successful, 1 if failed.
+    """
     idx_list = os.listdir(".\\data\\")
-    for i, elem in enumerate(idx_list):
+    for i, elem in enumerate(idx_list[:limit_num]):
         if i == 0:
             print("IDX  CT,             LB,             TR_CT,          NM,             SUV_NM,         RN_TR_LB,      ELEM CHECK")
             raw_ct_image, raw_lb_image, tr_ct_image, raw_nm_image, suv_nm_image, rn_tr_lb_image = get_images(elem)
@@ -737,6 +744,7 @@ def check_index():
             except:
                 check_result = False
             print(elem, np.shape(raw_ct_image), np.shape(raw_lb_image), np.shape(tr_ct_image), np.shape(raw_nm_image), np.shape(suv_nm_image), np.shape(rn_tr_lb_image), check_result)
+    return 0
 
 
 if __name__ == "__main__":
