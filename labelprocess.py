@@ -115,6 +115,10 @@ def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indic
         transformed_label_images[bone_label] = transformed_mask * bone_label
     merged_label_image = np.zeros_like(transformed_mask)
     for bone_label, label_image in transformed_label_images.items():
-        mask_value = int(np.unique(label_image)[1])
-        merged_label_image[label_image == mask_value] = mask_value
+        # print(bone_label, np.unique(label_image))
+        if len(np.unique(label_image)) == 2:
+            mask_value = int(np.unique(label_image)[1])
+            merged_label_image[label_image == mask_value] = mask_value
+        else:
+            continue
     return merged_label_image
