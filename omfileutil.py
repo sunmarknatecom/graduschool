@@ -27,7 +27,7 @@ def get_file_paths(idx, root_path = ".\\data\\"):
     """
     ct_path = os.path.join(root_path, idx, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "_CT_" in elem), None))
     nm_path = os.path.join(root_path, idx, next((elem for elem in os.listdir(os.path.join(root_path,idx)) if "_NM_" in elem), None))
-    lb_path = ".\\labels\\"+idx+"_nifti_label.nii"
+    lb_path = os.path.join(".\\labels\\",idx+"_nifti_label.nii")
     #print(ct_path, nm_path)
     return ct_path, nm_path, lb_path
 
