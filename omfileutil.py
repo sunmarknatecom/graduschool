@@ -82,7 +82,7 @@ def load_LB_image(folder_path = ".//TEST_LB//"):
     temp_lb_image = temp_lb_file_obj.get_fdata()
     temp_out_lb_image = np.transpose(temp_lb_image, (2, 1, 0))
     temp_out_lb_image = np.flip(temp_out_lb_image, axis=1)
-    return temp_out_lb_image
+    return temp_out_lb_image.astype(np.uint8)
 
 
 
