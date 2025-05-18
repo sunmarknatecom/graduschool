@@ -5,6 +5,7 @@ def get_nm_vol_info(idx):
     """
     idx = index of the file
     Function to calculate the volume of the source NM image.
+    unit volume: cm3/voxel
     Returns:
         volume: Volume of the source NM image
     """
