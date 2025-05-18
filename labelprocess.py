@@ -75,9 +75,21 @@ def blend_images(src1_image, src2_image):
     else:
          print("error not equal shape")       
 
-def find_sig_index(arr):
+def find_sig_lb_index_range(binary_mask_lb_image):
+    """
+    Finds the start and end indices of non-zero elements in a binary mask label image.
+    Args:
+        binary_mask_lb_image: A binary mask label image (2D or 3D).
+    Returns:
+        A list of tuples, where each tuple contains the start and end indices of non-zero elements.
+    Example:
+        binary_mask_lb_image = np.array([[0, 0, 1], [1, 1, 0], [0, 0, 0]])
+        ranges = find_sig_lb_index_range(binary_mask_lb_image)
+        # ranges will be [(0, 2), (1, 3)]
+    """
     ranges = []
     start = None
+    arr = [(np.sum(elem) !=0).astype(int) for elem in binary_mask_lb_image]
     for i, elem in enumerate(arr):
         if elem != 0:
             if start is None:
@@ -89,9 +101,6 @@ def find_sig_index(arr):
     if start is not None:
         ranges.append((start, len(arr)))
     return ranges
-
-def find_sig_frame(arr):
-    return [(np.sum(elem) !=0).astype(int) for elem in arr]
 
 def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indices):
     """
