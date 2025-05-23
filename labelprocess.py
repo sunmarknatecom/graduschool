@@ -108,7 +108,12 @@ def find_axial_sig_lb_index_range(binary_mask_lb_image, axial_index=1):
     ranges = []
     start = None
     axial_index_range = np.shape(binary_mask_lb_image)[axial_index]
-    arr = [(np.sum(binary_mask_lb_image[:,idx,:]) !=0).astype(int) for idx in range(axial_index_range)]
+    if axial_index == 1:
+        arr = [(np.sum(binary_mask_lb_image[:,idx,:]) !=0).astype(int) for idx in range(axial_index_range)]
+    elif axial_index == 2:
+        arr = [(np.sum(binary_mask_lb_image[:,:,idx]) !=0).astype(int) for idx in range(axial_index_range)]
+    else:
+        return print("Error, not available axis")
     for i, elem in enumerate(arr):
         if elem != 0:
             if start is None:
