@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 from omfileutil import get_file_paths, open_CT_obj, open_NM_obj, load_CT_image, load_LB_image, load_NM_image, load_suv_nm_image
 from arrayprocess import get_align_info, realign_ct_image, realign_nm_image, realign_lb_image, transform_ct_image, transform_single_label, transform_label
 from imageprocess import cvt_mono_image, cvt_color_image, cvt_mono_image, cvt_color_image
-from labelprocess import label_info, full_label_info, extract_raw_mask_label, extract_binary_mask_label, find_min_max_index, blend_images, find_sig_index, find_sig_frame, merge_lb_image
+from labelprocess import label_info, full_label_info, extract_raw_mask_label, extract_binary_mask_label, find_min_max_index, blend_images, find_sig_lb_index_range, find_axial_sig_lb_index_range, merge_lb_image
 from display import single_channel_view, multi_channel_view, merged_view
 from omstat import get_nm_vol_info, get_nm_stat_info
 

@@ -102,6 +102,25 @@ def find_sig_lb_index_range(binary_mask_lb_image):
         ranges.append((start, len(arr)))
     return ranges
 
+def find_axial_sig_lb_index_range(binary_mask_lb_image, axial_index=1):
+    """
+    """
+    ranges = []
+    start = None
+    axial_index_range = np.shape(binary_mask_lb_image)[axial_index]
+    arr = [(np.sum(binary_mask_lb_image[:,idx,:]) !=0).astype(int) for idx in range(axial_index_range)]
+    for i, elem in enumerate(arr):
+        if elem != 0:
+            if start is None:
+                start = i
+        else:
+            if start is not None:
+                ranges.append((start, i))
+                start = None
+    if start is not None:
+        ranges.append((start, len(arr)))
+    return ranges
+
 def merge_lb_image(src_ct_file_obj, src_nm_file_obj, raw_label_image, bone_indices):
     """
     Merges multiple binary label maps (one for each bone index) into a single labeled image.
