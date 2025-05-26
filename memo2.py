@@ -46,7 +46,7 @@ coronal_range = om.find_axial_sig_lb_index_range(lb_image, axial_index=2)
 # long bones
 long_bones = [69, 70, 75, 76]
 out_df = []
-for idx in idx_list[:30]:
+for idx in idx_list:
     print("Starting to process", idx)
     raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = om.get_images(idx)
     print("Loaded images")
@@ -56,8 +56,16 @@ for idx in idx_list[:30]:
         temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
         ranges = om.find_sig_lb_index_range(temp_lb_image)
         ranges = max(ranges, key=lambda x: x[1]-x[0])
-        temp_lb_image[:ranges[0], :, :] = 0
-        temp_lb_image[ranges[1]:, :, :] = 0
+        center = int((ranges[0]+ranges[1])/2)
+        # 1 slice
+        temp_lb_image[:center, :, :] = 0
+        temp_lb_image[center+1:, :, :] = 0
+        # 3 slice
+        # temp_lb_image[:center-1, :, :] = 0
+        # temp_lb_image[center+2:, :, :] = 0
+        # 5 slice
+        # temp_lb_image[:center-2, :, :] = 0
+        # temp_lb_image[center+3:, :, :] = 0
         temp_out_image = om.get_nm_stat_info(suv_nm_image, temp_lb_image)
         print(
             f"idx: {idx}, seg: {elem}, "
@@ -67,6 +75,8 @@ for idx in idx_list[:30]:
             f"mean: {temp_out_image[3]:.2f}, "
             f"std: {temp_out_image[4]:.2f}"
         )
+        temp_dict[organs[int(elem)]+"_range"] = ranges
+        temp_dict[organs[int(elem)]+"_center_slice"] = center
         temp_dict[organs[int(elem)]+"_vol"] = volume * temp_out_image[0]
         temp_dict[organs[int(elem)]+"_min"] = temp_out_image[2]
         temp_dict[organs[int(elem)]+"_max"] = temp_out_image[1]
