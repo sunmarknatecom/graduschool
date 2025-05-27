@@ -1,6 +1,6 @@
 import orbismarci as om
 import pandas as pd
-import os
+import os, copy
 import numpy as np
 
 idx_list = os.listdir(".\\data\\")
@@ -61,12 +61,17 @@ for idx in idx_list:
         temp_lb_image[:center, :, :] = 0
         temp_lb_image[center+1:, :, :] = 0
         # 3 slice
-        # temp_lb_image[:center-1, :, :] = 0
-        # temp_lb_image[center+2:, :, :] = 0
+        temp_3fr_lb_image = copy.copy(temp_lb_image)
+        temp_3fr_lb_image[:center-1, :, :] = 0
+        temp_3fr_lb_image[center+2:, :, :] = 0
         # 5 slice
-        # temp_lb_image[:center-2, :, :] = 0
-        # temp_lb_image[center+3:, :, :] = 0
+        temp_5fr_lb_image = copy.copy(temp_lb_image)
+        temp_5fr_lb_image[:center-2, :, :] = 0
+        temp_5fr_lb_image[center+3:, :, :] = 0
+        # results
         temp_out_image = om.get_nm_stat_info(suv_nm_image, temp_lb_image)
+        temp_out_3fr_image = om.get_nm_stat_info(suv_nm_image, temp_3fr_lb_image)
+        temp_out_5fr_image = om.get_nm_stat_info(suv_nm_image, temp_5fr_lb_image)
         print(
             f"idx: {idx}, seg: {elem}, "
             f"volume: {volume * temp_out_image[0]:.2f}, "
@@ -74,6 +79,16 @@ for idx in idx_list:
             f"max: {temp_out_image[1]:.2f}, "
             f"mean: {temp_out_image[3]:.2f}, "
             f"std: {temp_out_image[4]:.2f}"
+            f"3_fr_volume: {volume * temp_out_3fr_image[0]:.2f}, "
+            f"3_fr_min: {temp_out_3fr_image[2]:.2f}, "
+            f"3_fr_max: {temp_out_3fr_image[1]:.2f}, "
+            f"3_fr_mean: {temp_out_3fr_image[3]:.2f}, "
+            f"3_fr_std: {temp_out_3fr_image[4]:.2f}"
+            f"5_fr_volume: {volume * temp_out_5fr_image[0]:.2f}, "
+            f"5_fr_min: {temp_out_5fr_image[2]:.2f}, "
+            f"5_fr_max: {temp_out_5fr_image[1]:.2f}, "
+            f"5_fr_mean: {temp_out_5fr_image[3]:.2f}, "
+            f"5_fr_std: {temp_out_5fr_image[4]:.2f}"
         )
         temp_dict[organs[int(elem)]+"_range"] = ranges
         temp_dict[organs[int(elem)]+"_center_slice"] = center
@@ -82,11 +97,23 @@ for idx in idx_list:
         temp_dict[organs[int(elem)]+"_max"] = temp_out_image[1]
         temp_dict[organs[int(elem)]+"_mean"] = temp_out_image[3]
         temp_dict[organs[int(elem)]+"_std"] = temp_out_image[4]
+        # 3frame
+        temp_dict[organs[int(elem)]+"_3fr_vol"] = volume * temp_out_3fr_image[0]
+        temp_dict[organs[int(elem)]+"_3fr_min"] = temp_out_3fr_image[2]
+        temp_dict[organs[int(elem)]+"_3fr_max"] = temp_out_3fr_image[1]
+        temp_dict[organs[int(elem)]+"_3fr_mean"] = temp_out_3fr_image[3]
+        temp_dict[organs[int(elem)]+"_3fr_std"] = temp_out_3fr_image[4]
+        # 5frame
+        temp_dict[organs[int(elem)]+"_5fr_vol"] = volume * temp_out_5fr_image[0]
+        temp_dict[organs[int(elem)]+"_5fr_min"] = temp_out_5fr_image[2]
+        temp_dict[organs[int(elem)]+"_5fr_max"] = temp_out_5fr_image[1]
+        temp_dict[organs[int(elem)]+"_5fr_mean"] = temp_out_5fr_image[3]
+        temp_dict[organs[int(elem)]+"_5fr_std"] = temp_out_5fr_image[4]
         out_df.append(temp_dict)
     print("Finished processing", idx)
 
 long_bones_result_df = pd.DataFrame(out_df)
-long_bones_result_df.to_csv("long_bones_result.csv", index=True)
+long_bones_result_df.to_csv("long_bones_result_all.csv", index=True)
 
 # shpere bone
 sphere_bones = [91]
