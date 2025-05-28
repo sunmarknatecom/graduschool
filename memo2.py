@@ -53,106 +53,266 @@ import numpy as np
 import time
 import datetime
 
-idx_list = os.listdir(".\\data\\")
-bone_index = om.get_bone_indices()
-organs = om.get_organs()
-
-long_bones = [69, 70, 75, 76]
-out_df = []
-for idx in idx_list:
-    start_time = time.time()
-    start_datetime = datetime.datetime.now()
-    print("Starting to process", idx)
-    # time Record
-    print(f"Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
-    # time Record
-    raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = om.get_images(idx)
-    print("Loaded images")
-    volume = om.get_nm_vol_info(idx)
-    temp_dict = {"idx":idx}
-    for elem in long_bones:
-        temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
-        ranges = om.find_sig_lb_index_range(temp_lb_image)
-        ranges = max(ranges, key=lambda x: x[1]-x[0])
-        center = int((ranges[0]+ranges[1])/2)
-        temp_1fr_lb_image = copy.copy(temp_lb_image)
-        temp_3fr_lb_image = copy.copy(temp_lb_image)
-        temp_5fr_lb_image = copy.copy(temp_lb_image)
-        # 1 slice
-        temp_1fr_lb_image[:center, :, :] = 0
-        temp_1fr_lb_image[center+1:, :, :] = 0
-        # 3 slice
-        temp_3fr_lb_image[:center-1, :, :] = 0
-        temp_3fr_lb_image[center+2:, :, :] = 0
-        # 5 slice
-        temp_5fr_lb_image[:center-2, :, :] = 0
-        temp_5fr_lb_image[center+3:, :, :] = 0
-        # results
-        temp_out_1fr_image = om.get_nm_stat_info(suv_nm_image, temp_1fr_lb_image)
-        temp_out_3fr_image = om.get_nm_stat_info(suv_nm_image, temp_3fr_lb_image)
-        temp_out_5fr_image = om.get_nm_stat_info(suv_nm_image, temp_5fr_lb_image)
-        print(
-            f"idx: {idx}, seg: {elem}, "
-            f"volume: {volume * temp_out_1fr_image[0]:.2f}, "
-            f"min: {temp_out_1fr_image[2]:.2f}, "
-            f"max: {temp_out_1fr_image[1]:.2f}, "
-            f"mean: {temp_out_1fr_image[3]:.2f}, "
-            f"std: {temp_out_1fr_image[4]:.2f}"
-            f"3_fr_volume: {volume * temp_out_3fr_image[0]:.2f}, "
-            f"3_fr_min: {temp_out_3fr_image[2]:.2f}, "
-            f"3_fr_max: {temp_out_3fr_image[1]:.2f}, "
-            f"3_fr_mean: {temp_out_3fr_image[3]:.2f}, "
-            f"3_fr_std: {temp_out_3fr_image[4]:.2f}"
-            f"5_fr_volume: {volume * temp_out_5fr_image[0]:.2f}, "
-            f"5_fr_min: {temp_out_5fr_image[2]:.2f}, "
-            f"5_fr_max: {temp_out_5fr_image[1]:.2f}, "
-            f"5_fr_mean: {temp_out_5fr_image[3]:.2f}, "
-            f"5_fr_std: {temp_out_5fr_image[4]:.2f}"
-        )
-        temp_dict[organs[int(elem)]+"_range"] = ranges
-        temp_dict[organs[int(elem)]+"_center_slice"] = center
-        temp_dict[organs[int(elem)]+"_vol"] = volume * temp_out_1fr_image[0]
-        temp_dict[organs[int(elem)]+"_min"] = temp_out_1fr_image[2]
-        temp_dict[organs[int(elem)]+"_max"] = temp_out_1fr_image[1]
-        temp_dict[organs[int(elem)]+"_mean"] = temp_out_1fr_image[3]
-        temp_dict[organs[int(elem)]+"_std"] = temp_out_1fr_image[4]
-        # 3frame
-        temp_dict[organs[int(elem)]+"_3fr_vol"] = volume * temp_out_3fr_image[0]
-        temp_dict[organs[int(elem)]+"_3fr_min"] = temp_out_3fr_image[2]
-        temp_dict[organs[int(elem)]+"_3fr_max"] = temp_out_3fr_image[1]
-        temp_dict[organs[int(elem)]+"_3fr_mean"] = temp_out_3fr_image[3]
-        temp_dict[organs[int(elem)]+"_3fr_std"] = temp_out_3fr_image[4]
-        # 5frame
-        temp_dict[organs[int(elem)]+"_5fr_vol"] = volume * temp_out_5fr_image[0]
-        temp_dict[organs[int(elem)]+"_5fr_min"] = temp_out_5fr_image[2]
-        temp_dict[organs[int(elem)]+"_5fr_max"] = temp_out_5fr_image[1]
-        temp_dict[organs[int(elem)]+"_5fr_mean"] = temp_out_5fr_image[3]
-        temp_dict[organs[int(elem)]+"_5fr_std"] = temp_out_5fr_image[4]
+def long_bone_analyze(result_file_name = "long_bones_result_all.csv"):
+    idx_list = os.listdir(".\\data\\")
+    bone_index = om.get_bone_indices()
+    organs = om.get_organs()
+    long_bones = [69, 70, 75, 76]
+    out_df = []
+    for idx in idx_list:
+        start_time = time.time()
+        start_datetime = datetime.datetime.now()
+        print("Starting to process", idx)
+        # time Record
+        print(f"Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        # time Record
+        raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = om.get_images(idx)
+        print("Loaded images")
+        volume = om.get_nm_vol_info(idx)
+        temp_dict = {"idx":idx}
+        for elem in long_bones:
+            temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
+            ranges = om.find_sig_lb_index_range(temp_lb_image)
+            ranges = max(ranges, key=lambda x: x[1]-x[0])
+            center = int((ranges[0]+ranges[1])/2)
+            temp_1fr_lb_image = copy.copy(temp_lb_image)
+            temp_3fr_lb_image = copy.copy(temp_lb_image)
+            temp_5fr_lb_image = copy.copy(temp_lb_image)
+            # 1 slice
+            temp_1fr_lb_image[:center, :, :] = 0
+            temp_1fr_lb_image[center+1:, :, :] = 0
+            # 3 slice
+            temp_3fr_lb_image[:center-1, :, :] = 0
+            temp_3fr_lb_image[center+2:, :, :] = 0
+            # 5 slice
+            temp_5fr_lb_image[:center-2, :, :] = 0
+            temp_5fr_lb_image[center+3:, :, :] = 0
+            # results
+            temp_out_1fr_image = om.get_nm_stat_info(suv_nm_image, temp_1fr_lb_image)
+            temp_out_3fr_image = om.get_nm_stat_info(suv_nm_image, temp_3fr_lb_image)
+            temp_out_5fr_image = om.get_nm_stat_info(suv_nm_image, temp_5fr_lb_image)
+            print(
+                f"idx: {idx}, seg: {elem}, "
+                f"volume: {volume * temp_out_1fr_image[0]:.2f}, "
+                f"min: {temp_out_1fr_image[2]:.2f}, "
+                f"max: {temp_out_1fr_image[1]:.2f}, "
+                f"mean: {temp_out_1fr_image[3]:.2f}, "
+                f"std: {temp_out_1fr_image[4]:.2f}"
+                f"3_fr_volume: {volume * temp_out_3fr_image[0]:.2f}, "
+                f"3_fr_min: {temp_out_3fr_image[2]:.2f}, "
+                f"3_fr_max: {temp_out_3fr_image[1]:.2f}, "
+                f"3_fr_mean: {temp_out_3fr_image[3]:.2f}, "
+                f"3_fr_std: {temp_out_3fr_image[4]:.2f}"
+                f"5_fr_volume: {volume * temp_out_5fr_image[0]:.2f}, "
+                f"5_fr_min: {temp_out_5fr_image[2]:.2f}, "
+                f"5_fr_max: {temp_out_5fr_image[1]:.2f}, "
+                f"5_fr_mean: {temp_out_5fr_image[3]:.2f}, "
+                f"5_fr_std: {temp_out_5fr_image[4]:.2f}"
+            )
+            temp_dict[organs[int(elem)]+"_range"] = ranges
+            temp_dict[organs[int(elem)]+"_center_slice"] = center
+            temp_dict[organs[int(elem)]+"_vol"] = volume * temp_out_1fr_image[0]
+            temp_dict[organs[int(elem)]+"_min"] = temp_out_1fr_image[2]
+            temp_dict[organs[int(elem)]+"_max"] = temp_out_1fr_image[1]
+            temp_dict[organs[int(elem)]+"_mean"] = temp_out_1fr_image[3]
+            temp_dict[organs[int(elem)]+"_std"] = temp_out_1fr_image[4]
+            # 3frame
+            temp_dict[organs[int(elem)]+"_3fr_vol"] = volume * temp_out_3fr_image[0]
+            temp_dict[organs[int(elem)]+"_3fr_min"] = temp_out_3fr_image[2]
+            temp_dict[organs[int(elem)]+"_3fr_max"] = temp_out_3fr_image[1]
+            temp_dict[organs[int(elem)]+"_3fr_mean"] = temp_out_3fr_image[3]
+            temp_dict[organs[int(elem)]+"_3fr_std"] = temp_out_3fr_image[4]
+            # 5frame
+            temp_dict[organs[int(elem)]+"_5fr_vol"] = volume * temp_out_5fr_image[0]
+            temp_dict[organs[int(elem)]+"_5fr_min"] = temp_out_5fr_image[2]
+            temp_dict[organs[int(elem)]+"_5fr_max"] = temp_out_5fr_image[1]
+            temp_dict[organs[int(elem)]+"_5fr_mean"] = temp_out_5fr_image[3]
+            temp_dict[organs[int(elem)]+"_5fr_std"] = temp_out_5fr_image[4]
         out_df.append(temp_dict)
-    # time Record
-    end_time = time.time()
-    end_datetime = datetime.datetime.now()
-    print(f"End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
-    elapsed_time_seconds = end_time - start_time
-    elapsed_timedelta = end_datetime - start_datetime
-    # time Record
-    print("Finished processing", idx)
-    
-
-long_bones_result_df = pd.DataFrame(out_df)
-long_bones_result_df.to_csv("long_bones_result_all.csv", index=True)
+        # time Record
+        end_time = time.time()
+        end_datetime = datetime.datetime.now()
+        print(f"End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        elapsed_time_seconds = end_time - start_time
+        elapsed_timedelta = end_datetime - start_datetime
+        # time Record
+        print("Finished processing", idx)
+    long_bones_result_df = pd.DataFrame(out_df)
+    long_bones_result_df.to_csv(result_file_name, index=True)
 
 # shpere bone
-sphere_bones = [91]
+
+def sphere_bone_analyze(result_file_name = "sphere_bones_result_all.csv"):
+    idx_list = os.listdir(".\\data\\")
+    organs = om.get_organs()
+    sphere_bones = [91]
+    out_df = []
+    for idx in idx_list:
+        start_time = time.time()
+        start_datetime = datetime.datetime.now()
+        print("Starting to process", idx)
+        # time Record
+        print(f"Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        # time Record
+        raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = om.get_images(idx)
+        print("Loaded images")
+        volume = om.get_nm_vol_info(idx)
+        temp_dict = {"idx":idx}
+        for elem in sphere_bones:
+            temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
+            ranges = om.find_sig_lb_index_range(temp_lb_image)
+            ranges = max(ranges, key=lambda x: x[1]-x[0])
+            center = int((ranges[0]+ranges[1])/2)
+            temp_1fr_lb_image = copy.copy(temp_lb_image)
+            temp_3fr_lb_image = copy.copy(temp_lb_image)
+            temp_5fr_lb_image = copy.copy(temp_lb_image)
+            # 1 slice
+            temp_1fr_lb_image[:center, :, :] = 0
+            temp_1fr_lb_image[center+1:, :, :] = 0
+            # 3 slice
+            temp_3fr_lb_image[:center-1, :, :] = 0
+            temp_3fr_lb_image[center+2:, :, :] = 0
+            # 5 slice
+            temp_5fr_lb_image[:center-2, :, :] = 0
+            temp_5fr_lb_image[center+3:, :, :] = 0
+            # results
+            temp_out_1fr_image = om.get_nm_stat_info(suv_nm_image, temp_1fr_lb_image)
+            temp_out_3fr_image = om.get_nm_stat_info(suv_nm_image, temp_3fr_lb_image)
+            temp_out_5fr_image = om.get_nm_stat_info(suv_nm_image, temp_5fr_lb_image)
+            print(
+                f"idx: {idx}, seg: {elem}, "
+                f"volume: {volume * temp_out_1fr_image[0]:.2f}, "
+                f"min: {temp_out_1fr_image[2]:.2f}, "
+                f"max: {temp_out_1fr_image[1]:.2f}, "
+                f"mean: {temp_out_1fr_image[3]:.2f}, "
+                f"std: {temp_out_1fr_image[4]:.2f}"
+                f"3_fr_volume: {volume * temp_out_3fr_image[0]:.2f}, "
+                f"3_fr_min: {temp_out_3fr_image[2]:.2f}, "
+                f"3_fr_max: {temp_out_3fr_image[1]:.2f}, "
+                f"3_fr_mean: {temp_out_3fr_image[3]:.2f}, "
+                f"3_fr_std: {temp_out_3fr_image[4]:.2f}"
+                f"5_fr_volume: {volume * temp_out_5fr_image[0]:.2f}, "
+                f"5_fr_min: {temp_out_5fr_image[2]:.2f}, "
+                f"5_fr_max: {temp_out_5fr_image[1]:.2f}, "
+                f"5_fr_mean: {temp_out_5fr_image[3]:.2f}, "
+                f"5_fr_std: {temp_out_5fr_image[4]:.2f}"
+            )
+            temp_dict[organs[int(elem)]+"_range"] = ranges
+            temp_dict[organs[int(elem)]+"_center_slice"] = center
+            temp_dict[organs[int(elem)]+"_vol"] = volume * temp_out_1fr_image[0]
+            temp_dict[organs[int(elem)]+"_min"] = temp_out_1fr_image[2]
+            temp_dict[organs[int(elem)]+"_max"] = temp_out_1fr_image[1]
+            temp_dict[organs[int(elem)]+"_mean"] = temp_out_1fr_image[3]
+            temp_dict[organs[int(elem)]+"_std"] = temp_out_1fr_image[4]
+            # 3frame
+            temp_dict[organs[int(elem)]+"_3fr_vol"] = volume * temp_out_3fr_image[0]
+            temp_dict[organs[int(elem)]+"_3fr_min"] = temp_out_3fr_image[2]
+            temp_dict[organs[int(elem)]+"_3fr_max"] = temp_out_3fr_image[1]
+            temp_dict[organs[int(elem)]+"_3fr_mean"] = temp_out_3fr_image[3]
+            temp_dict[organs[int(elem)]+"_3fr_std"] = temp_out_3fr_image[4]
+            # 5frame
+            temp_dict[organs[int(elem)]+"_5fr_vol"] = volume * temp_out_5fr_image[0]
+            temp_dict[organs[int(elem)]+"_5fr_min"] = temp_out_5fr_image[2]
+            temp_dict[organs[int(elem)]+"_5fr_max"] = temp_out_5fr_image[1]
+            temp_dict[organs[int(elem)]+"_5fr_mean"] = temp_out_5fr_image[3]
+            temp_dict[organs[int(elem)]+"_5fr_std"] = temp_out_5fr_image[4]
+        out_df.append(temp_dict)
+        # time Record
+        end_time = time.time()
+        end_datetime = datetime.datetime.now()
+        print(f"End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        elapsed_time_seconds = end_time - start_time
+        elapsed_timedelta = end_datetime - start_datetime
+        # time Record
+        print("Finished processing", idx)
+    long_bones_result_df = pd.DataFrame(out_df)
+    long_bones_result_df.to_csv(result_file_name, index=True)
 
 # cube bones
-cube_bones = [27, 28, 29]
 
 
-
-# confirmation of ranges numbers
-for idx in idx_list[:50]:
-    _, __, ___, ____, ______, lb_image = om.get_images(idx)
-    temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = 69)
-    ranges = om.find_sig_lb_index_range(temp_lb_image)
-    print(idx, ranges)
+def cube_bone_analyze(result_file_name = "sphere_bones_result_all.csv"):
+    idx_list = os.listdir(".\\data\\")
+    organs = om.get_organs()
+    cube_bones = [27, 28, 29]
+    out_df = []
+    for idx in idx_list:
+        start_time = time.time()
+        start_datetime = datetime.datetime.now()
+        print("Starting to process", idx)
+        # time Record
+        print(f"Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        # time Record
+        raw_ct_image, raw_lb_image, ct_image, nm_image, suv_nm_image, lb_image = om.get_images(idx)
+        print("Loaded images")
+        volume = om.get_nm_vol_info(idx)
+        temp_dict = {"idx":idx}
+        for elem in cube_bones:
+            temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
+            ranges = om.find_sig_lb_index_range(temp_lb_image)
+            ranges = max(ranges, key=lambda x: x[1]-x[0])
+            center = int((ranges[0]+ranges[1])/2)
+            temp_1fr_lb_image = copy.copy(temp_lb_image)
+            temp_3fr_lb_image = copy.copy(temp_lb_image)
+            temp_5fr_lb_image = copy.copy(temp_lb_image)
+            # 1 slice
+            temp_1fr_lb_image[:center, :, :] = 0
+            temp_1fr_lb_image[center+1:, :, :] = 0
+            # 3 slice
+            temp_3fr_lb_image[:center-1, :, :] = 0
+            temp_3fr_lb_image[center+2:, :, :] = 0
+            # 5 slice
+            temp_5fr_lb_image[:center-2, :, :] = 0
+            temp_5fr_lb_image[center+3:, :, :] = 0
+            # results
+            temp_out_1fr_image = om.get_nm_stat_info(suv_nm_image, temp_1fr_lb_image)
+            temp_out_3fr_image = om.get_nm_stat_info(suv_nm_image, temp_3fr_lb_image)
+            temp_out_5fr_image = om.get_nm_stat_info(suv_nm_image, temp_5fr_lb_image)
+            print(
+                f"idx: {idx}, seg: {elem}, "
+                f"volume: {volume * temp_out_1fr_image[0]:.2f}, "
+                f"min: {temp_out_1fr_image[2]:.2f}, "
+                f"max: {temp_out_1fr_image[1]:.2f}, "
+                f"mean: {temp_out_1fr_image[3]:.2f}, "
+                f"std: {temp_out_1fr_image[4]:.2f}"
+                f"3_fr_volume: {volume * temp_out_3fr_image[0]:.2f}, "
+                f"3_fr_min: {temp_out_3fr_image[2]:.2f}, "
+                f"3_fr_max: {temp_out_3fr_image[1]:.2f}, "
+                f"3_fr_mean: {temp_out_3fr_image[3]:.2f}, "
+                f"3_fr_std: {temp_out_3fr_image[4]:.2f}"
+                f"5_fr_volume: {volume * temp_out_5fr_image[0]:.2f}, "
+                f"5_fr_min: {temp_out_5fr_image[2]:.2f}, "
+                f"5_fr_max: {temp_out_5fr_image[1]:.2f}, "
+                f"5_fr_mean: {temp_out_5fr_image[3]:.2f}, "
+                f"5_fr_std: {temp_out_5fr_image[4]:.2f}"
+            )
+            temp_dict[organs[int(elem)]+"_range"] = ranges
+            temp_dict[organs[int(elem)]+"_center_slice"] = center
+            temp_dict[organs[int(elem)]+"_vol"] = volume * temp_out_1fr_image[0]
+            temp_dict[organs[int(elem)]+"_min"] = temp_out_1fr_image[2]
+            temp_dict[organs[int(elem)]+"_max"] = temp_out_1fr_image[1]
+            temp_dict[organs[int(elem)]+"_mean"] = temp_out_1fr_image[3]
+            temp_dict[organs[int(elem)]+"_std"] = temp_out_1fr_image[4]
+            # 3frame
+            temp_dict[organs[int(elem)]+"_3fr_vol"] = volume * temp_out_3fr_image[0]
+            temp_dict[organs[int(elem)]+"_3fr_min"] = temp_out_3fr_image[2]
+            temp_dict[organs[int(elem)]+"_3fr_max"] = temp_out_3fr_image[1]
+            temp_dict[organs[int(elem)]+"_3fr_mean"] = temp_out_3fr_image[3]
+            temp_dict[organs[int(elem)]+"_3fr_std"] = temp_out_3fr_image[4]
+            # 5frame
+            temp_dict[organs[int(elem)]+"_5fr_vol"] = volume * temp_out_5fr_image[0]
+            temp_dict[organs[int(elem)]+"_5fr_min"] = temp_out_5fr_image[2]
+            temp_dict[organs[int(elem)]+"_5fr_max"] = temp_out_5fr_image[1]
+            temp_dict[organs[int(elem)]+"_5fr_mean"] = temp_out_5fr_image[3]
+            temp_dict[organs[int(elem)]+"_5fr_std"] = temp_out_5fr_image[4]
+        out_df.append(temp_dict)
+        # time Record
+        end_time = time.time()
+        end_datetime = datetime.datetime.now()
+        print(f"End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+        elapsed_time_seconds = end_time - start_time
+        elapsed_timedelta = end_datetime - start_datetime
+        # time Record
+        print("Finished processing", idx)
+    long_bones_result_df = pd.DataFrame(out_df)
+    long_bones_result_df.to_csv(result_file_name, index=True)
