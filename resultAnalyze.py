@@ -24,6 +24,7 @@ def reference_result_cleaning(grouped_index_dict_list):
                 if "ref" in os.path.basename(path_):
                     with open(path_, "r") as file:
                         lines = [line.strip() for line in file.readlines() if line.strip()]  # Remove empty lines
+                        temp_out_dict["Num_Ref_sites"]=int(len(lines)//6)
                     for i in range(len(lines)):
                         if i%6 == 0:
                             name = "Ref_" + lines[i]
@@ -56,10 +57,11 @@ def deg_result_cleaning(grouped_index_dict_list):
                     # print(path_)
                     with open(path_, "r") as file:
                         lines = [line.strip() for line in file.readlines() if line.strip()]  # Remove empty lines
+                        temp_out_dict["Num_Deg_lesions"]=int(len(lines)//6)
                     for i in range(len(lines)):
                         if i%6 == 0:
-                            name = "Deg_"+str(int(i//6))+"_"+str(int(len(lines)//6)-1)
-                            temp_out_dict[name+"loc"] = lines[i]
+                            name = "Deg_"+str(int(i//6))
+                            temp_out_dict[name+"_loc"] = lines[i]
                         elif i%6 == 2:
                             temp_out_dict[name+"_"+lines[i].split(" ")[0]] = float(lines[i].split(" ")[1])
                         elif i%6 == 3:
@@ -90,10 +92,11 @@ def meta_result_cleaning(grouped_index_dict_list):
                     # print(path_)
                     with open(path_, "r") as file:
                         lines = [line.strip() for line in file.readlines() if line.strip()]  # Remove empty lines
+                        temp_out_dict["Num_Meta_lesions"]=int(len(lines)//6)
                     for i in range(len(lines)):
                         if i%6 == 0:
-                            name = "Meta_"+str(int(i//6))+"_"+str(int(len(lines)//6)-1)
-                            temp_out_dict[name+"loc"] = lines[i]
+                            name = "Meta_"+str(int(i//6))
+                            temp_out_dict[name+"_loc"] = lines[i]
                         elif i%6 == 2:
                             temp_out_dict[name+"_"+lines[i].split(" ")[0]] = float(lines[i].split(" ")[1])
                         elif i%6 == 3:
