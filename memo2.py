@@ -169,3 +169,23 @@ for k, v in deg_out_dict.items():
 
 for k, v in meta_out_dict.items():
     print(k, len(v.keys()))
+
+import sys
+
+sys.path.append("D:\\99Gradu\\")
+
+import orbismarci as om
+import pandas as pd
+
+paths = om.path_cleaning()
+ref_out_dict = om.reference_result_cleaning(paths)
+deg_out_dict = om.deg_result_cleaning(paths)
+meta_out_dict = om.meta_result_cleaning(paths)
+
+ref_df = pd.DataFrame.from_dict(ref_out_dict, orient='index')
+deg_df = pd.DataFrame.from_dict(deg_out_dict, orient='index')
+meta_df = pd.DataFrame.from_dict(meta_out_dict, orient='index')
+
+ref_df.to_csv("ref_results.csv", index=True)
+deg_df.to_csv("deg_results.csv", index=True)
+meta_df.to_csv("meta_results.csv", index=True)
