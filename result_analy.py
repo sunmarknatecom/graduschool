@@ -110,16 +110,15 @@ def meta_result_cleaning(grouped_index_dict_list):
         grouped_result_dict[idx] = temp_out_dict
     return grouped_result_dict
 
-paths = path_cleaning()
-out_dict = reference_result_cleaning(paths)
-deg_out_dict = deg_result_cleaning(paths)
-meta_out_dict = meta_result_cleaning(paths)
 
-for k, v in out_dict.items():
-    print(k, len(v.keys()))
-
-for k, v in deg_out_dict.items():
-    print(k, len(v.keys()))
-
-for k, v in meta_out_dict.items():
-    print(k, len(v.keys()))
+if __name__ == "__main__":
+    paths = path_cleaning()
+    out_dict = reference_result_cleaning(paths)
+    deg_out_dict = deg_result_cleaning(paths)
+    meta_out_dict = meta_result_cleaning(paths)
+    for k, v in out_dict.items():
+        print(k, len(v.keys()))
+    for k, v in deg_out_dict.items():
+        print(k, len(v.keys()))
+    for k, v in meta_out_dict.items():
+        print(k, len(v.keys()))
