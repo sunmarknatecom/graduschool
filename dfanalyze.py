@@ -218,4 +218,4 @@ stats_df = pd.DataFrame(stats_dict)
 
 stats_df.to_csv("suvbw_statistics_2.csv", index=True)
 
-print("CSV 저장 완료: suvbw_statistics_2.csv")
+print("CSV 저장 완료: suvbw_statistics.csv")
