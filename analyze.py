@@ -8,8 +8,13 @@ from scipy.ndimage import center_of_mass
 
 # long bones
 
-def long_bone_analyze(result_file_name = "long_bones_result_all.csv"):
-    idx_list = os.listdir(".\\data\\")
+global_input_list = os.listdir(".\\data\\")
+global_input_list = global_input_list[:10]
+
+# long_bone_analyze(input_list = global_input_list[10:], result_file_name = "auto_long_bones_result_02.csv")
+
+def long_bone_analyze(input_list = None, result_file_name = "auto_long_bones_result_01.csv"):
+    idx_list = input_list
     bone_index = om.get_bone_indices()
     organs = om.get_organs()
     long_bones = [69, 70, 75, 76]
@@ -29,21 +34,23 @@ def long_bone_analyze(result_file_name = "long_bones_result_all.csv"):
             temp_lb_image = om.extract_binary_mask_label(lb_image, seg_n = int(elem))
             ranges = om.find_sig_lb_index_range(temp_lb_image)
             ranges = max(ranges, key=lambda x: x[1]-x[0])
-            distal_1thrid_frame = int(ranges[0] + (ranges[1]-ranges[0])*0.25)
+            distal_1third_frame = int(ranges[0] + (ranges[1]-ranges[0])*0.25)
             middle_frame = int(ranges[0] + (ranges[1]-ranges[0])*0.5)
             proxim_3third_frame = int(ranges[0] + (ranges[1]-ranges[0])*0.75)
-            zdc = center_of_mass(temp_lb_image[distal_1thrid_frame])
+            zdc = center_of_mass(temp_lb_image[distal_1third_frame])
+            zdc = (distal_1third_frame, int(zdc[0]), int(zdc[1]))
             zmc = center_of_mass(temp_lb_image[middle_frame])
+            zmc = (middle_frame, int(zmc[0]), int(zmc[1]))
             zpc = center_of_mass(temp_lb_image[proxim_3third_frame])
+            zpc = (proxim_3third_frame, int(zpc[0]), int(zpc[1]))
             offset = 1
-            volume_zdc = suv_nm_image[distal_c-offset:distal_c+offset+1, zdc[1]-offset:zdc[1]+offset+1, zdc[2]-offset:zdc[2]+offset+1]
-            volume_q2c = suv_nm_image[zmc[0]-offset:zmc[0]+offset+1, zmc[1]-offset:zmc[1]+offset+1, zmc[2]-offset:zmc[2]+offset+1]
-            volume_q3c = suv_nm_image[zpc[0]-offset:zpc[0]+offset+1, zpc[1]-offset:zpc[1]+offset+1, zpc[2]-offset:zpc[2]+offset+1]
-            temp_out_zdc = [np.shape(zdc)[0]*np.shape(zdc)[1]*np.shape(zdc)[2], np.max(volume_zdc), np.min(volume_zdc), np.mean(volume_zdc), np.std(volume_zdc)]
-            temp_out_zmc = [np.shape(zmc)[0]*np.shape(zmc)[1]*np.shape(zmc)[2], np.max(volume_q2c), np.min(volume_q2c), np.mean(volume_q2c), np.std(volume_q2c)]
-            temp_out_zpc = [np.shape(zpc)[0]*np.shape(zpc)[1]*np.shape(zpc)[2], np.max(volume_q3c), np.min(volume_q3c), np.mean(volume_q3c), np.std(volume_q3c)]
+            volume_zdc = suv_nm_image[zdc[0]-offset:zdc[0]+offset+1, zdc[1]-offset:zdc[1]+offset+1, zdc[2]-offset:zdc[2]+offset+1]
+            volume_zmc = suv_nm_image[zmc[0]-offset:zmc[0]+offset+1, zmc[1]-offset:zmc[1]+offset+1, zmc[2]-offset:zmc[2]+offset+1]
+            volume_zpc = suv_nm_image[zpc[0]-offset:zpc[0]+offset+1, zpc[1]-offset:zpc[1]+offset+1, zpc[2]-offset:zpc[2]+offset+1]
+            temp_out_zdc = [np.shape(volume_zdc)[0]*np.shape(volume_zdc)[1]*np.shape(volume_zdc)[2], np.max(volume_zdc), np.min(volume_zdc), np.mean(volume_zdc), np.std(volume_zdc)]
+            temp_out_zmc = [np.shape(volume_zmc)[0]*np.shape(volume_zmc)[1]*np.shape(volume_zmc)[2], np.max(volume_zmc), np.min(volume_zmc), np.mean(volume_zmc), np.std(volume_zmc)]
+            temp_out_zpc = [np.shape(volume_zpc)[0]*np.shape(volume_zpc)[1]*np.shape(volume_zpc)[2], np.max(volume_zpc), np.min(volume_zpc), np.mean(volume_zpc), np.std(volume_zpc)]
             # results
-
             print(
                 f"idx: {idx}, seg: {elem}, "
                 f"distal_volume: {volume * temp_out_zdc[0]:.2f}, "
@@ -63,11 +70,11 @@ def long_bone_analyze(result_file_name = "long_bones_result_all.csv"):
                 f"proxim_std:    {temp_out_zpc[4]:.2f}"
             )
             temp_dict[organs[int(elem)]+"_range"] = ranges
-            temp_dict[organs[int(elem)]+"_centers"] = center
+            temp_dict[organs[int(elem)]+"_centers"] = (zdc, zmc, zpc)
             frame_results = {
-                "1fr": temp_out_1fr_image,
-                "3fr": temp_out_3fr_image,
-                "5fr": temp_out_5fr_image
+                "distal_frame": temp_out_zdc,
+                "middle_frame": temp_out_zmc,
+                "proxim_frame": temp_out_zpc
             }
             for fr_label, stats in frame_results.items():
                 temp_dict[organs[int(elem)] + f"_{fr_label}_vol"] = volume * stats[0]
@@ -360,25 +367,10 @@ if __name__ == "__main__":
     cube_bone_analyze()
     print("All analyses completed successfully.")
 
-# range = [(a,b)]
-# 1st quarter of center q1c
+global_input_list = os.listdir(".\\data\\")
 
-temp_lb_image
-
-q1c = int(a + (b-a)*0.25)
-q2c = int(a + (b-a)*0.5)
-q3c = int(a + (b-a)*0.75)
-
-zq1c = center_of_mass(temp_lb_image[q1c])
-zq2c = center_of_mass(temp_lb_image[q2c])
-zq3c = center_of_mass(temp_lb_image[q3c])
-
-zq1c = (q1c, int(zq1c[0]),int(zq1c[1]))
-zq2c = (q2c, int(zq2c[0]),int(zq2c[1]))
-zq3c = (q3c, int(zq3c[0]),int(zq3c[1]))
-
-
-offset = 1
-filtered_volume_q1c = suv_nm_image[zq1c[0]-offset:zq1c[0]+offset+1, zq1c[1]-offset:zq1c[1]+offset+1, zq1c[2]-offset:zq1c[2]+offset+1]
-filtered_volume_q2c = suv_nm_image[zq2c[0]-offset:zq2c[0]+offset+1, zq2c[1]-offset:zq2c[1]+offset+1, zq2c[2]-offset:zq2c[2]+offset+1]
-filtered_volume_q3c = suv_nm_image[zq3c[0]-offset:zq3c[0]+offset+1, zq3c[1]-offset:zq3c[1]+offset+1, zq3c[2]-offset:zq3c[2]+offset+1]
+for i in range(1,24):
+    try:
+        long_bone_analyze(input_list = global_input_list[i*10:(i+1)*10], result_file_name = f"auto_long_bones_result_{i+1:02d}.csv")
+    except:
+        print(f"Error processing batch {i+1}, skipping...")
