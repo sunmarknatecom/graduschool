@@ -180,8 +180,8 @@ def long_bone_analyze(input_list = None, result_file_name = "auto_long_bones_res
 
 # shpere bone
 
-def sphere_bone_analyze(result_file_name = "sphere_bones_result_all.csv"):
-    idx_list = os.listdir(".\\data\\")
+def sphere_bone_analyze(input_list = global_input_list, result_file_name = "sphere_bones_result_all.csv"):
+    idx_list = input_list
     organs = om.get_organs()
     sphere_bones = [91]
     out_df = []
@@ -202,50 +202,67 @@ def sphere_bone_analyze(result_file_name = "sphere_bones_result_all.csv"):
             ranges = max(ranges, key=lambda x: x[1]-x[0])
             center = int((ranges[0]+ranges[1]*2)/3)
             temp_rearr_lb_image = copy.copy(temp_lb_image)
-            temp_rearr_lb_image[:center-2, :, :] = 0
-            temp_rearr_lb_image[center+3:, :, :] = 0
+            # center(Frame) (-2 -1 0 1 2)
+            temp_rearr_lb_image[:center-1, :, :] = 0
+            temp_rearr_lb_image[center+2:, :, :] = 0
             ranges2 = om.find_axial_sig_lb_index_range(temp_rearr_lb_image, axial_index=1)
             ranges2 = max(ranges2, key=lambda x: x[1]-x[0])
             center2 = int((ranges2[0]+ranges2[1])/2)
-            temp_rearr_lb_image[:,:center2-2,:] = 0
-            temp_rearr_lb_image[:,center2+3:,:] = 0
+            temp_rearr_lb_image[:,:center2-1,:] = 0
+            temp_rearr_lb_image[:,center2+2:,:] = 0
             ranges3 = om.find_axial_sig_lb_index_range(temp_rearr_lb_image, axial_index=2)
             rt_range = ranges3[0]
             lt_range = ranges3[1]
             rt_temp_rearr_lb_image = copy.copy(temp_rearr_lb_image)
-            lt_temp_rearr_lb_image = copy.copy(temp_lb_image)
+            lt_temp_rearr_lb_image = copy.copy(temp_rearr_lb_image)
             rt_temp_rearr_lb_image[:,:,:rt_range[0]] = 0
             rt_temp_rearr_lb_image[:,:,rt_range[1]:] = 0
             lt_temp_rearr_lb_image[:,:,:lt_range[0]] = 0
             lt_temp_rearr_lb_image[:,:,lt_range[1]:] = 0
+            rt_skull_center = center_of_mass(rt_temp_rearr_lb_image)
+            lt_skull_center = center_of_mass(lt_temp_rearr_lb_image)
             # results
-            rt_temp_out_report = om.get_nm_stat_info(suv_nm_image, rt_temp_rearr_lb_image)
-            lt_temp_out_report = om.get_nm_stat_info(suv_nm_image, lt_temp_rearr_lb_image)
+            offset = 1
+            rt_volume = temp_lb_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset+1, rt_skull_center[1]-offset:rt_skull_center[1]+offset+1, rt_skull_center[2]-offset:rt_skull_center[2]+offset+1]
+            lt_volume = temp_lb_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset+1, lt_skull_center[1]-offset:lt_skull_center[1]+offset+1, lt_skull_center[2]-offset:lt_skull_center[2]+offset+1]
+            rt_filtered_3d = suv_nm_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset+1, rt_skull_center[1]-offset:rt_skull_center[1]+offset+1, rt_skull_center[2]-offset:rt_skull_center[2]+offset+1]
+            lt_filtered_3d = suv_nm_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset+1, lt_skull_center[1]-offset:lt_skull_center[1]+offset+1, lt_skull_center[2]-offset:lt_skull_center[2]+offset+1]
+            out_rt_volume = np.sum(rt_volume)
+            out_rt_min = np.min(rt_filtered_3d)
+            out_rt_max = np.max(rt_filtered_3d)
+            out_rt_mean = np.mean(rt_filtered_3d)
+            out_rt_std = np.std(rt_filtered_3d)
+            out_lt_volume = np.sum(lt_volume)
+            out_lt_min = np.min(lt_filtered_3d)
+            out_lt_max = np.max(lt_filtered_3d)
+            out_lt_mean = np.mean(lt_filtered_3d)
+            out_lt_std = np.std(lt_filtered_3d)
             print(
                 f"idx: {idx}, seg: {elem}, "
-                f"rt_skull_volume: {volume * rt_temp_out_report[0]:.2f}, "
-                f"rt_skull_min: {rt_temp_out_report[2]:.2f}, "
-                f"rt_skull_max: {rt_temp_out_report[1]:.2f}, "
-                f"rt_skull_mean: {rt_temp_out_report[3]:.2f}, "
-                f"rt_skull_std: {rt_temp_out_report[4]:.2f}"
-                f"lt_skull_volume: {volume * lt_temp_out_report[0]:.2f}, "
-                f"lt_skull_min: {lt_temp_out_report[2]:.2f}, "
-                f"lt_skull_max: {lt_temp_out_report[1]:.2f}, "
-                f"lt_skull_mean: {lt_temp_out_report[3]:.2f}, "
-                f"lt_skull_std: {lt_temp_out_report[4]:.2f}"
+                f"rt_skull_volume: {out_rt_volume}, "
+                f"rt_skull_min: {out_rt_min}, "
+                f"rt_skull_max: {out_rt_max}, "
+                f"rt_skull_mean: {out_rt_mean}, "
+                f"rt_skull_std: {out_rt_std}"
+                f"lt_skull_volume: {out_lt_volume}, "
+                f"lt_skull_min: {out_lt_min}, "
+                f"lt_skull_max: {out_lt_max}, "
+                f"lt_skull_mean: {out_lt_max}, "
+                f"lt_skull_std: {out_lt_std}"
             )
             temp_dict[organs[int(elem)]+"_rt_skull_range"] = ranges
-            temp_dict[organs[int(elem)]+"_rt_skull_center_slice"] = center
-            temp_dict[organs[int(elem)]+"_rt_skull_volume"] = volume * rt_temp_out_report[0]
-            temp_dict[organs[int(elem)]+"_rt_skull_min"] = rt_temp_out_report[2]
-            temp_dict[organs[int(elem)]+"_rt_skull_max"] = rt_temp_out_report[1]
-            temp_dict[organs[int(elem)]+"_rt_skull_mean"] = rt_temp_out_report[3]
-            temp_dict[organs[int(elem)]+"_rt_skull_std"] = rt_temp_out_report[4]
-            temp_dict[organs[int(elem)]+"_lt_skull_volume"] = volume * lt_temp_out_report[0]
-            temp_dict[organs[int(elem)]+"_lt_skull_min"] = lt_temp_out_report[2]
-            temp_dict[organs[int(elem)]+"_lt_skull_max"] = lt_temp_out_report[1]
-            temp_dict[organs[int(elem)]+"_lt_skull_mean"] = lt_temp_out_report[3]
-            temp_dict[organs[int(elem)]+"_lt_skull_std"] = lt_temp_out_report[4]
+            temp_dict[organs[int(elem)]+"_rt_skull_center"] = rt_skull_center
+            temp_dict[organs[int(elem)]+"_rt_skull_volume"] = rt_volume
+            temp_dict[organs[int(elem)]+"_rt_skull_min"] = out_rt_min
+            temp_dict[organs[int(elem)]+"_rt_skull_max"] = out_rt_max
+            temp_dict[organs[int(elem)]+"_rt_skull_mean"] = out_rt_mean
+            temp_dict[organs[int(elem)]+"_rt_skull_std"] = out_rt_std
+            temp_dict[organs[int(elem)]+"_lt_skull_range"] = ranges2
+            temp_dict[organs[int(elem)]+"_lt_skull_volume"] = lt_volume
+            temp_dict[organs[int(elem)]+"_lt_skull_min"] = out_lt_min
+            temp_dict[organs[int(elem)]+"_lt_skull_max"] = out_lt_max
+            temp_dict[organs[int(elem)]+"_lt_skull_mean"] = out_lt_mean
+            temp_dict[organs[int(elem)]+"_lt_skull_std"] = out_lt_std
         out_df.append(temp_dict)
         # time Record
         end_time = time.time()
@@ -369,8 +386,14 @@ if __name__ == "__main__":
 
 global_input_list = os.listdir(".\\data\\")
 
-for i in range(1,24):
+for i in range(24):
     try:
         long_bone_analyze(input_list = global_input_list[i*10:(i+1)*10], result_file_name = f"auto_long_bones_result_{i+1:02d}.csv")
+    except:
+        print(f"Error processing batch {i+1}, skipping...")
+
+for i in range(24):
+    try:
+        sphere_bone_analyze(input_list = global_input_list[i*10:(i+1)*10], result_file_name = f"auto_sphere_bones_result_{i+1:02d}.csv")
     except:
         print(f"Error processing batch {i+1}, skipping...")
