@@ -221,12 +221,14 @@ def sphere_bone_analyze(input_list = global_input_list, result_file_name = "sphe
             lt_temp_rearr_lb_image[:,:,lt_range[1]:] = 0
             rt_skull_center = center_of_mass(rt_temp_rearr_lb_image)
             lt_skull_center = center_of_mass(lt_temp_rearr_lb_image)
+            rt_skull_center = (int(rt_skull_center[0]), int(rt_skull_center[1]), int(rt_skull_center[2]))
+            lt_skull_center = (int(lt_skull_center[0]), int(lt_skull_center[1]), int(lt_skull_center[2]))
             # results
             offset = 1
-            rt_volume = temp_lb_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset+1, rt_skull_center[1]-offset:rt_skull_center[1]+offset+1, rt_skull_center[2]-offset:rt_skull_center[2]+offset+1]
-            lt_volume = temp_lb_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset+1, lt_skull_center[1]-offset:lt_skull_center[1]+offset+1, lt_skull_center[2]-offset:lt_skull_center[2]+offset+1]
-            rt_filtered_3d = suv_nm_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset+1, rt_skull_center[1]-offset:rt_skull_center[1]+offset+1, rt_skull_center[2]-offset:rt_skull_center[2]+offset+1]
-            lt_filtered_3d = suv_nm_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset+1, lt_skull_center[1]-offset:lt_skull_center[1]+offset+1, lt_skull_center[2]-offset:lt_skull_center[2]+offset+1]
+            rt_volume = temp_lb_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset, rt_skull_center[1]-offset:rt_skull_center[1]+offset, rt_skull_center[2]-offset:rt_skull_center[2]+offset]
+            lt_volume = temp_lb_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset, lt_skull_center[1]-offset:lt_skull_center[1]+offset, lt_skull_center[2]-offset:lt_skull_center[2]+offset]
+            rt_filtered_3d = suv_nm_image[rt_skull_center[0]-offset:rt_skull_center[0]+offset, rt_skull_center[1]-offset:rt_skull_center[1]+offset, rt_skull_center[2]-offset:rt_skull_center[2]+offset]
+            lt_filtered_3d = suv_nm_image[lt_skull_center[0]-offset:lt_skull_center[0]+offset, lt_skull_center[1]-offset:lt_skull_center[1]+offset, lt_skull_center[2]-offset:lt_skull_center[2]+offset]
             out_rt_volume = np.sum(rt_volume)
             out_rt_min = np.min(rt_filtered_3d)
             out_rt_max = np.max(rt_filtered_3d)
@@ -252,13 +254,14 @@ def sphere_bone_analyze(input_list = global_input_list, result_file_name = "sphe
             )
             temp_dict[organs[int(elem)]+"_rt_skull_range"] = ranges
             temp_dict[organs[int(elem)]+"_rt_skull_center"] = rt_skull_center
-            temp_dict[organs[int(elem)]+"_rt_skull_volume"] = rt_volume
+            temp_dict[organs[int(elem)]+"_rt_skull_volume"] = out_rt_volume
             temp_dict[organs[int(elem)]+"_rt_skull_min"] = out_rt_min
             temp_dict[organs[int(elem)]+"_rt_skull_max"] = out_rt_max
             temp_dict[organs[int(elem)]+"_rt_skull_mean"] = out_rt_mean
             temp_dict[organs[int(elem)]+"_rt_skull_std"] = out_rt_std
             temp_dict[organs[int(elem)]+"_lt_skull_range"] = ranges2
-            temp_dict[organs[int(elem)]+"_lt_skull_volume"] = lt_volume
+            temp_dict[organs[int(elem)]+"_lt_skull_center"] = lt_skull_center
+            temp_dict[organs[int(elem)]+"_lt_skull_volume"] = out_lt_volume
             temp_dict[organs[int(elem)]+"_lt_skull_min"] = out_lt_min
             temp_dict[organs[int(elem)]+"_lt_skull_max"] = out_lt_max
             temp_dict[organs[int(elem)]+"_lt_skull_mean"] = out_lt_mean
@@ -392,8 +395,13 @@ for i in range(24):
     except:
         print(f"Error processing batch {i+1}, skipping...")
 
+global_input_list = global_input_list[:10]
+
 for i in range(24):
     try:
         sphere_bone_analyze(input_list = global_input_list[i*10:(i+1)*10], result_file_name = f"auto_sphere_bones_result_{i+1:02d}.csv")
     except:
         print(f"Error processing batch {i+1}, skipping...")
+
+
+sphere_bone_analyze(input_list = global_input_list, result_file_name = "auto_sphere_bones_result_all.csv")
